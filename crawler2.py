@@ -15,6 +15,7 @@ monkey.patch_all(thread=False)
 playHistoryUrl = 'http://p.eagate.573.jp/game/jubeat/copious/p/playdata/history.html?rival_id=%d&page=%d'
 contestListUrl = 'http://p.eagate.573.jp/game/jubeat/copious/p/contest/contest2.html?s=1&rival_id=%d'
 contestDataUrl = 'http://p.eagate.573.jp/game/jubeat/copious/p/contest/detail.html?rally_id=%d'
+playerInfoUrl = 'http://p.eagate.573.jp/game/jubeat/copious/p/playdata/index_other.html?rival_id={}'
 
 def getRedis():
   return redis.Redis(db=12)
@@ -157,7 +158,7 @@ def getUserHistory(rival_id):
     r = getRedis()
     
     last_update = r.hget('last_update', rival_id)
-    update_date = None
+    update_date = last_update
     user_name = r.hget('rival_id', rival_id)
 
     playHistory = []
@@ -174,7 +175,7 @@ def getUserHistory(rival_id):
         playdata['music'] = unescape(row.find(attrs={'class':'ht_mtitle'}).text)
         playdata['difficulty'] = row.find(attrs={'class':'ht_level'}).text
         playdata['score'] = row.findAll('li')[-1].text.split('/')[0]
-        if update_date is None:
+        if update_date is None or update_date < playdata['date']:
           update_date = playdata['date']
         if last_update and last_update >= playdata['date']:
           up_to_date = True
@@ -243,3 +244,36 @@ def updateContestHistory():
   except Exception, e:
     logging.error('updateContestHistory Error: %s'%e)
     return
+
+def registerUser(rival_id, user_name, update_contest=True):
+  try:
+    r = getRedis()
+    user_name = user_name.upper()
+    
+    if r.hexists('rival_id', rival_id):
+      if user_name != r.hget('rival_id', rival_id):
+        logging.error('user_name does not matched : {}, {}'.format(user_name, r.hget('rival_id', rival_id)))
+        return False
+      logging.info('user already exist : {}, {}'.format(rival_id, r.hget('rival_id', rival_id)))
+      return True
+
+    c = getHttpContents(playerInfoUrl.format(rival_id))
+    if c is None:
+      logging.error('registerUser error : site is not available')
+      return False
+    
+    user_name_site = c.find(attrs={'class':'name_text_table'})
+    if user_name_site != user_name:
+      logging.error('registerUser error : name missmatched {}, {}'.format(user_name, user_name_site))
+      return False
+
+    r.hset('rival_id', rival_id, user_name)
+    
+    if update_contest:
+      updateContestInfo(int(rival_id))
+
+    return True
+
+  except Exception, e:
+    logging.error('updateContestHistory Error: %s'%e)
+    return False
