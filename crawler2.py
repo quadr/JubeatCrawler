@@ -188,7 +188,8 @@ def getUserHistory(rival_id):
     playHistory.reverse()
     history_key = 'history:%d'%rival_id
     map(lambda _: r.lpush(history_key, '%(date)s:%(music)s:%(difficulty)s:%(score)s'%_), playHistory)
-    map(lambda _: logging.info(user_name + ' %(date)s %(music)s %(difficulty)s %(score)s'%_ ), playHistory)
+    map(lambda _: logging.info(user_name + ' %(date)s %(music)s %(difficulty)s %(score)s'%_), playHistory)
+    map(lambda _: r.lpush('recent_history', '%(date)s:%(music)s:%(difficulty)s:%(score)s'%_+':'+user_name), playHistory) 
     if update_date:
       r.hset('last_update', rival_id, update_date)
     return [ ((u'%(date)s:%(music)s:%(difficulty)s:%(score)s:{}'.format(rival_id)%_).encode('utf-8'), (u'%(music)s:%(difficulty)s'%_).encode('utf-8'), int(_['score']), _['date'].encode('utf-8')) for _ in playHistory ]
@@ -212,6 +213,7 @@ def updateContestHistory():
     gevent.joinall(jobs)
     
     playdata = dict(zip(member_list.keys(), [ _.value for _ in jobs ]))
+    r.ltrim('recent_history', 0, 200)
 
     for contest_id, members in contest_members.iteritems():
       contest_history_key = 'contest_history:{}'.format(contest_id)
@@ -222,7 +224,7 @@ def updateContestHistory():
       music_list = r.lrange('music_list:{}'.format(contest_id), 0, -1)
       
       logging.info('update contest <{}>'.format(contest_info['name']))
-      update_users = filter(lambda _: _ in playdata and len(playdata[_]) is not 0, members)
+      update_users = filter(lambda _: (_ in playdata and len(playdata[_]) is not 0) or (not r.hexists(contest_records_key, _)), members)
       contest_history = []
       for user in update_users:
         user_record = r.hget(contest_records_key, user)

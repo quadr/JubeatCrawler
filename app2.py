@@ -1,12 +1,16 @@
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash, jsonify, current_app
-from datetime import datetime
+from datetime import datetime, tzinfo, timedelta
 import redis
 import sys
+import PyRSS2Gen
 from functools import wraps
 
 app = Flask(__name__)
 def getRedis():
   return redis.Redis(db=12)
+
+def strToUTC(s):
+  return datetime.strptime(s, '%Y/%m/%d %H:%M:%S')-timedelta(hours=9)
 
 def jsonp(func):
   @wraps(func)
@@ -106,6 +110,28 @@ def contest_history(contest_id, page):
   except Exception, err:
     print sys.exc_info()[0], err
     return jsonify(code='error')
+
+@app.route('/rss')
+def rss():
+  try:
+    r = getRedis()
+    cols = ['date', 'music', 'difficulty', 'score', 'name']
+    history = [ dict(zip(cols, record.rsplit(':', 4))) for record in r.lrange('recent_history', 0, -1) ]
+    history.sort(lambda x, y: cmp(y['date'], x['date']))
+    history_item = [ {'title':'[{name}] {music} -  {difficulty} - {score}'.format(**record), 'pubDate':strToUTC(record['date'])} for record in history ]
+    rss = PyRSS2Gen.RSS2(
+      title = 'Jubeater',
+      description = 'Jubeater',
+      link = '',
+      items = [ PyRSS2Gen.RSSItem(**item) for item in history_item ]
+    )
+    mimetype = 'application/xml'
+    return current_app.response_class(rss.to_xml(encoding='utf-8'), mimetype=mimetype)
+
+  except Exception, err:
+    print sys.exc_info()[0], err
+    return jsonify(code='error')
+
 
 if __name__ == '__main__':
   app.run(host='0.0.0.0', port=4416)
