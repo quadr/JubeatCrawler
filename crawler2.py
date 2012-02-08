@@ -109,6 +109,8 @@ def updateContestInfo(rival_id):
         continue
       contest_info = dict(zip(['name', 'id', 'owner'], [ _.text for _ in cs[:3]]))
       contest_info.update(dict(zip(['start', 'end'], getContestPeriod(cs[3].text))))
+      if r.hexists('ignore_contest', contest_info['id']):
+        continue
       key = 'contest_info:' + contest_info['id']
       if not r.exists(key):
         r.hmset(key, contest_info)
