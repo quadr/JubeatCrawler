@@ -77,11 +77,12 @@ def user_history(rival_id, page):
     if not r.hexists('rival_id', rival_id):
       return jsonify(code='nodata')
 
+    perpage = 20
     user_name = r.hget('rival_id', rival_id)
-    idx = (page-1)*20
+    idx = (page-1)*perpage
     cols = ['date', 'music', 'difficulty', 'score']
-    history = [ dict(zip(cols, record.rsplit(':', 3))) for record in r.lrange('history:{}'.format(rival_id), idx, idx+19) ]
-    return jsonify(user_name=user_name, history=history, code='ok')
+    history = [ dict(zip(cols, record.rsplit(':', 3))) for record in r.lrange('history:{}'.format(rival_id), idx, idx+perpage-1) ]
+    return jsonify(user_name=user_name, history=history, code='ok', perpage=perpage, total=r.llen('history:{}'.format(rival_id)))
     
   except Exception, err:
     print sys.exc_info()[0], err
@@ -94,18 +95,19 @@ def contest_history(contest_id, page):
   try:
     r = getRedis()
 
+    perpage = 20
     contest_history_key = 'contest_history:{}'.format(contest_id)
     if not r.exists(contest_history_key):
       return jsonify(code='nodata')
-    idx = (page-1)*20
+    idx = (page-1)*perpage
     cols = ['date', 'music', 'difficulty', 'score', 'rival_id']
-    history = [ dict(zip(cols, record.rsplit(':', 4))) for record in r.lrange(contest_history_key, idx, idx+19) ]
+    history = [ dict(zip(cols, record.rsplit(':', 4))) for record in r.lrange(contest_history_key, idx, idx+perpage-1) ]
     rival_ids = set()
     map(lambda _: rival_ids.add(_['rival_id']), history)
     rival_ids = dict(zip(rival_ids, r.hmget('rival_id', rival_ids)))
     for record in history:
       record['user_name'] = rival_ids[record['rival_id']]
-    return jsonify(history=history, code='ok')
+    return jsonify(history=history, code='ok', perpage=perpage, total=r.llen(contest_history_key))
 
   except Exception, err:
     print sys.exc_info()[0], err
@@ -118,7 +120,7 @@ def rss():
     cols = ['date', 'music', 'difficulty', 'score', 'name']
     history = [ dict(zip(cols, record.rsplit(':', 4))) for record in r.lrange('recent_history', 0, -1) ]
     history.sort(lambda x, y: cmp(y['date'], x['date']))
-    history_item = [ {'title':'[{name}] {music} -  {difficulty} - {score}'.format(**record), 'pubDate':strToUTC(record['date'])} for record in history ]
+    history_item = [ {'title':'[{name}] {music} - {difficulty} - {score}'.format(**record), 'pubDate':strToUTC(record['date'])} for record in history ]
     rss = PyRSS2Gen.RSS2(
       title = 'Jubeater',
       description = 'Jubeater',
