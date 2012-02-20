@@ -191,7 +191,7 @@ def getUserHistory(rival_id):
     history_key = 'history:%d'%rival_id
     map(lambda _: r.lpush(history_key, '%(date)s:%(music)s:%(difficulty)s:%(score)s'%_), playHistory)
     map(lambda _: logging.info(user_name + ' %(date)s %(music)s %(difficulty)s %(score)s'%_), playHistory)
-    map(lambda _: r.lpush('recent_history', '%(date)s:%(music)s:%(difficulty)s:%(score)s'%_+':'+user_name), playHistory) 
+    map(lambda _: r.lpush('recent_history', '%(date)s\t%(music)s\t%(difficulty)s\t%(score)s'%_+'\t'+user_name+'\t'+now()), playHistory) 
     if update_date:
       r.hset('last_update', rival_id, update_date)
     return [ ((u'%(date)s:%(music)s:%(difficulty)s:%(score)s:{}'.format(rival_id)%_).encode('utf-8'), (u'%(music)s:%(difficulty)s'%_).encode('utf-8'), int(_['score']), _['date'].encode('utf-8')) for _ in playHistory ]

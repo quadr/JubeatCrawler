@@ -117,10 +117,10 @@ def contest_history(contest_id, page):
 def rss():
   try:
     r = getRedis()
-    cols = ['date', 'music', 'difficulty', 'score', 'name']
-    history = [ dict(zip(cols, record.rsplit(':', 4))) for record in r.lrange('recent_history', 0, -1) ]
-    history.sort(lambda x, y: cmp(y['date'], x['date']))
-    history_item = [ {'title':'[{name}] {music} - {difficulty} - {score}'.format(**record), 'pubDate':strToUTC(record['date'])} for record in history ]
+    cols = ['date', 'music', 'difficulty', 'score', 'name', 'pubdate']
+    history = [ dict(zip(cols, record.rsplit('\t'))) for record in r.lrange('recent_history', 0, -1) ]
+    history.sort(lambda x, y: cmp(y['pubdate'], x['pubdate']) or cmp(x['date'], y['date']))
+    history_item = [ {'title':'[{name}] {music} - {difficulty} - {score} - {date}'.format(**record), 'pubDate':strToUTC(record['pubdate'])} for record in history ]
     rss = PyRSS2Gen.RSS2(
       title = 'Jubeater',
       description = 'Jubeater',
