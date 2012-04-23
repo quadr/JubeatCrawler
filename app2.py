@@ -18,7 +18,7 @@ def jsonp(func):
     callback = request.args.get('callback', False)
     if callback:
       data = str(func(*args,**kwargs).data)
-      content = '{}({})'.format(str(callback), data)
+      content = '{0}({1})'.format(str(callback), data)
       mimetype = 'application/javascript'
       return current_app.response_class(content, mimetype=mimetype)
     else:
@@ -30,11 +30,23 @@ def jsonp(func):
 def contest_list():
   try:
     r = getRedis()
-    current_contest_list = [ r.hgetall('contest_info:{}'.format(_[16:])) for _ in r.keys('current_contest:*') ]
+    current_contest_list = [ r.hgetall('contest_info:{0}'.format(_[16:])) for _ in r.keys('current_contest:*') ]
     return jsonify(current_contest_list=current_contest_list, code='ok')
   except Exception, e:
     print sys.exc_info()[0], e
     return jsonify(code='error')
+
+@app.route('/contest/all')
+@jsonp
+def contest_list_all():
+  try:
+    r = getRedis()
+    contest_list = [ r.hgetall('contest_info:{0}'.format(_)) for _ in r.smembers('contests') ]
+    return jsonify(contest_list=contest_list, code='ok')
+  except Exception, e:
+    print sys.exc_info()[0], e
+    return jsonify(code='error')
+
 
 @app.route('/contest/<contest_id>')
 @jsonp
@@ -42,10 +54,10 @@ def contest(contest_id):
   try:
     r = getRedis()
 
-    contest_info_key = 'contest_info:{}'.format(contest_id)
-    contest_member_key = 'contest_members:{}'.format(contest_id)
-    contest_records_key = 'contest_records:{}'.format(contest_id)
-    music_list_key = 'music_list:{}'.format(contest_id)
+    contest_info_key = 'contest_info:{0}'.format(contest_id)
+    contest_member_key = 'contest_members:{0}'.format(contest_id)
+    contest_records_key = 'contest_records:{0}'.format(contest_id)
+    music_list_key = 'music_list:{0}'.format(contest_id)
     if not r.exists(contest_info_key):
       return jsonify(code='nodata')
     contest_info = r.hgetall(contest_info_key)
@@ -81,8 +93,8 @@ def user_history(rival_id, page):
     user_name = r.hget('rival_id', rival_id)
     idx = (page-1)*perpage
     cols = ['date', 'music', 'difficulty', 'score']
-    history = [ dict(zip(cols, record.rsplit(':', 3))) for record in r.lrange('history:{}'.format(rival_id), idx, idx+perpage-1) ]
-    return jsonify(user_name=user_name, history=history, code='ok', perpage=perpage, total=r.llen('history:{}'.format(rival_id)))
+    history = [ dict(zip(cols, record.rsplit(':', 3))) for record in r.lrange('history:{0}'.format(rival_id), idx, idx+perpage-1) ]
+    return jsonify(user_name=user_name, history=history, code='ok', perpage=perpage, total=r.llen('history:{0}'.format(rival_id)))
     
   except Exception, err:
     print sys.exc_info()[0], err
@@ -96,7 +108,7 @@ def contest_history(contest_id, page):
     r = getRedis()
 
     perpage = 20
-    contest_history_key = 'contest_history:{}'.format(contest_id)
+    contest_history_key = 'contest_history:{0}'.format(contest_id)
     if not r.exists(contest_history_key):
       return jsonify(code='nodata')
     idx = (page-1)*perpage
