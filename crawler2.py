@@ -15,7 +15,7 @@ monkey.patch_all(thread=False)
 playHistoryUrl = 'http://p.eagate.573.jp/game/jubeat/copious/p/playdata/history.html?rival_id=%d&page=%d'
 contestListUrl = 'http://p.eagate.573.jp/game/jubeat/copious/p/contest/contest2.html?s=1&rival_id=%d'
 contestDataUrl = 'http://p.eagate.573.jp/game/jubeat/copious/p/contest/detail.html?rally_id=%d'
-playerInfoUrl = 'http://p.eagate.573.jp/game/jubeat/copious/p/playdata/index_other.html?rival_id={}'
+playerInfoUrl = 'http://p.eagate.573.jp/game/jubeat/copious/p/playdata/index_other.html?rival_id={0}'
 
 def getRedis():
   return redis.Redis(db=12)
@@ -199,7 +199,7 @@ def getUserHistory(rival_id):
     map(lambda _: r.lpush('recent_history', '%(date)s\t%(music)s\t%(difficulty)s\t%(score)s'%_+'\t'+user_name+'\t'+now()), playHistory) 
     if update_date:
       r.hset('last_update', rival_id, update_date)
-    return [ ((u'%(date)s:%(music)s:%(difficulty)s:%(score)s:{}'.format(rival_id)%_).encode('utf-8'), (u'%(music)s:%(difficulty)s'%_).encode('utf-8'), int(_['score']), _['date'].encode('utf-8')) for _ in playHistory ]
+    return [ ((u'%(date)s:%(music)s:%(difficulty)s:%(score)s:{0}'.format(rival_id)%_).encode('utf-8'), (u'%(music)s:%(difficulty)s'%_).encode('utf-8'), int(_['score']), _['date'].encode('utf-8')) for _ in playHistory ]
 
   except Exception, e:
     logging.error('getUserHistory Error: %s(%d)'%(e, rival_id))
@@ -223,14 +223,14 @@ def updateContestHistory():
     r.ltrim('recent_history', 0, 200)
 
     for contest_id, members in contest_members.iteritems():
-      contest_history_key = 'contest_history:{}'.format(contest_id)
-      contest_records_key = 'contest_records:{}'.format(contest_id)
-      contest_info_key = 'contest_info:{}'.format(contest_id)
+      contest_history_key = 'contest_history:{0}'.format(contest_id)
+      contest_records_key = 'contest_records:{0}'.format(contest_id)
+      contest_info_key = 'contest_info:{0}'.format(contest_id)
       
       contest_info = r.hgetall(contest_info_key)
-      music_list = r.lrange('music_list:{}'.format(contest_id), 0, -1)
+      music_list = r.lrange('music_list:{0}'.format(contest_id), 0, -1)
       
-      logging.info('update contest <{}>'.format(contest_info['name']))
+      logging.info('update contest <{0}>'.format(contest_info['name']))
       update_users = filter(lambda _: (_ in playdata and len(playdata[_]) is not 0) or (not r.hexists(contest_records_key, _)), members)
       contest_history = []
       for user in update_users:
@@ -246,9 +246,9 @@ def updateContestHistory():
             user_record[idx] = max(user_record[idx], data[2])
         r.hset(contest_records_key, user, ':'.join([str(_) for _ in user_record]))
       contest_history.sort()
-      logging.info('add {} histories'.format(len(contest_history)))
+      logging.info('add {0} histories'.format(len(contest_history)))
       map(lambda _: r.lpush(contest_history_key, _), contest_history)
-      r.hset('contest_info:{}'.format(contest_id), 'last_update', now())
+      r.hset('contest_info:{0}'.format(contest_id), 'last_update', now())
 
   except Exception, e:
     logging.error('updateContestHistory Error: %s'%e)
@@ -261,9 +261,9 @@ def registerUser(rival_id, user_name, update_contest=True):
     
     if r.hexists('rival_id', rival_id):
       if user_name != r.hget('rival_id', rival_id):
-        logging.error('user_name does not matched : {}, {}'.format(user_name, r.hget('rival_id', rival_id)))
+        logging.error('user_name does not matched : {0}, {1}'.format(user_name, r.hget('rival_id', rival_id)))
         return False
-      logging.info('user already exist : {}, {}'.format(rival_id, r.hget('rival_id', rival_id)))
+      logging.info('user already exist : {0}, {1}'.format(rival_id, r.hget('rival_id', rival_id)))
       return True
 
     c = getHttpContents(playerInfoUrl.format(rival_id))
@@ -273,7 +273,7 @@ def registerUser(rival_id, user_name, update_contest=True):
     
     user_name_site = c.find(attrs={'class':'name_text_table'})
     if user_name_site != user_name:
-      logging.error('registerUser error : name missmatched {}, {}'.format(user_name, user_name_site))
+      logging.error('registerUser error : name missmatched {0}, {1}'.format(user_name, user_name_site))
       return False
 
     r.hset('rival_id', rival_id, user_name)
