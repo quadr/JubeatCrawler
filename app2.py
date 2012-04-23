@@ -4,6 +4,9 @@ import redis
 import sys
 import PyRSS2Gen
 from functools import wraps
+from gevent import monkey
+
+monkey.patch_all()
 
 app = Flask(__name__)
 def getRedis():

@@ -171,6 +171,11 @@ def getUserHistory(rival_id):
         return []
       
       rows = c.findAll(attrs={'class':'history_box'})
+
+      # Being 만세!
+      if len(rows) == 0:
+        return []
+
       for row in rows:
         playdata = {}
         playdata['date'] = row.find(attrs={'class':'hitory_data'}).text[6:25]
