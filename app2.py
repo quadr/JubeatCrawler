@@ -41,7 +41,7 @@ def contest_list():
 def contest_list_all():
   try:
     r = getRedis()
-    contest_list = [ r.hgetall('contest_info:{0}'.format(_)) for _ in r.smembers('contests') ]
+    contest_list = [ r.hgetall(_) for _ in r.keys('contest_info:*') ]
     return jsonify(contest_list=contest_list, code='ok')
   except Exception, e:
     print sys.exc_info()[0], e

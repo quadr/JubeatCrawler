@@ -118,7 +118,6 @@ def updateContestInfo(rival_id):
           cur_key = 'current_contest:' + contest_info['id']
           r.set(cur_key, 1)
           r.expireat(cur_key, dateToTime(contest_info['end'])+600)
-          r.sadd('contests', contest_info['id'])
 
   except Exception, e:
     logging.error('updateContestInfo Error: %s(%d)'%(e, rival_id))
