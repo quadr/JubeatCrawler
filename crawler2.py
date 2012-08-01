@@ -84,9 +84,8 @@ def login(kid=None, password=None):
 def getContestPeriod(unicode_date):
   date = [ datetime.strptime(_.encode('utf-8').strip(), u'%m月%d日 %H時'.encode('utf-8')) for _ in unicode_date.split(u'〜') ]
   year = [ datetime.now().year, datetime.now().year ]
-  if date[0].month < datetime.now().month:
+  if date[0].month > datetime.now().month:
     year[0] -= 1
-    year[1] -= 1
   if date[0] > date[1]:
     year[1] += 1
   return [ datetime(y, d.month, d.day, d.hour).strftime('%Y/%m/%d %H:%M:%S') for y, d in zip(year, date) ] 
