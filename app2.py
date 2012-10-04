@@ -133,9 +133,19 @@ def rss():
   try:
     r = getRedis()
     cols = ['date', 'music', 'difficulty', 'score', 'name', 'pubdate']
-    history = [ dict(zip(cols, record.rsplit('\t'))) for record in r.lrange('recent_history', 0, -1) ]
+    cols_new = ['date', 'music', 'difficulty', 'score', 'place', 'name', 'pubdate']
+#    history = [ dict(zip(cols, record.rsplit('\t'))) for record in r.lrange('recent_history', 0, -1) ]
+    history = []
+    for record in r.lrange('recent_history', 0, -1):
+      r = record.rsplit('\t')
+      if len(r) == len(cols):
+        r = dict(zip(cols, r))
+        r['place'] = 'Unknown'
+      elif len(r) == len(cols_new):
+        r = dict(zip(cols_new, r))
+      history.append(r)
     history.sort(lambda x, y: cmp(y['pubdate'], x['pubdate']) or cmp(x['date'], y['date']))
-    history_item = [ {'title':'[{name}] {music} - {difficulty} - {score} - {date}'.format(**record), 'pubDate':strToUTC(record['pubdate'])} for record in history ]
+    history_item = [ {'title':'[{name}] {music} - {difficulty} - {score} - {date} - {place}'.format(**record), 'pubDate':strToUTC(record['pubdate'])} for record in history ]
     rss = PyRSS2Gen.RSS2(
       title = 'Jubeater',
       description = 'Jubeater',

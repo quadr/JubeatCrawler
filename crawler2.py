@@ -157,7 +157,6 @@ def updateContestData(contest_id):
 def getUserHistory(rival_id):
   try:
     r = getRedis()
-    
     last_update = r.hget('last_update', rival_id)
     update_date = last_update
     user_name = r.hget('rival_id', rival_id)
@@ -178,6 +177,7 @@ def getUserHistory(rival_id):
       for row in rows:
         playdata = {}
         playdata['date'] = row.find(attrs={'class':'hitory_data'}).text[6:25]
+        playdata['place'] = row.find(attrs={'class':'hitory_data'}).text[32:]
         playdata['music'] = unescape(row.find(attrs={'class':'ht_mtitle'}).text)
         playdata['difficulty'] = row.find(attrs={'class':'ht_level'}).text
         playdata['score'] = row.findAll('li')[-1].text.split('/')[0]
@@ -194,8 +194,8 @@ def getUserHistory(rival_id):
     playHistory.reverse()
     history_key = 'history:%d'%rival_id
     map(lambda _: r.lpush(history_key, '%(date)s:%(music)s:%(difficulty)s:%(score)s'%_), playHistory)
-    map(lambda _: logging.info(user_name + ' %(date)s %(music)s %(difficulty)s %(score)s'%_), playHistory)
-    map(lambda _: r.lpush('recent_history', '%(date)s\t%(music)s\t%(difficulty)s\t%(score)s'%_+'\t'+user_name+'\t'+now()), playHistory) 
+    map(lambda _: logging.info(user_name + ' %(date)s %(music)s %(difficulty)s %(score)s %(place)s'%_), playHistory)
+    map(lambda _: r.lpush('recent_history', '%(date)s\t%(music)s\t%(difficulty)s\t%(score)s\t%(place)s'%_+'\t'+user_name+'\t'+now()), playHistory) 
     if update_date:
       r.hset('last_update', rival_id, update_date)
     return [ ((u'%(date)s:%(music)s:%(difficulty)s:%(score)s:{0}'.format(rival_id)%_).encode('utf-8'), (u'%(music)s:%(difficulty)s'%_).encode('utf-8'), int(_['score']), _['date'].encode('utf-8')) for _ in playHistory ]
