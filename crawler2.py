@@ -6,6 +6,7 @@ import Cookie
 import time
 import gevent
 import logging
+import unicodedata
 from gevent import monkey
 from datetime import datetime, timedelta
 from BeautifulSoup import BeautifulSoup
@@ -177,7 +178,7 @@ def getUserHistory(rival_id):
       for row in rows:
         playdata = {}
         playdata['date'] = row.find(attrs={'class':'hitory_data'}).text[6:25]
-        playdata['place'] = row.find(attrs={'class':'hitory_data'}).text[32:]
+        playdata['place'] = unicodedata.normalize('NFKC', row.find(attrs={'class':'hitory_data'}).text[32:])
         playdata['music'] = unescape(row.find(attrs={'class':'ht_mtitle'}).text)
         playdata['difficulty'] = row.find(attrs={'class':'ht_level'}).text
         playdata['score'] = row.findAll('li')[-1].text.split('/')[0]
