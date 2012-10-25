@@ -21,7 +21,6 @@ func readLog() {
 	for {
 		result, _ := redis.MultiBulk(c.Do("BRPOP", "IRC_HISTORY", 0))
 
-		log.Println(result)
 		if result != nil {
 			msg <- string(result[1].([]byte))
 		}

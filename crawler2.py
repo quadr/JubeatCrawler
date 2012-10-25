@@ -36,16 +36,16 @@ def unescape(html):
   html = html.replace(u'&amp;', u'&')
   return html
 
-RankBase = {
-  500000 : "E",
-  700000 : "D",
-  800000 : "C",
-  900000 : "B",
-  950000 : "S",
-  980000 : "SS",
-  1000000 : "SSS",
-  1000001 : "EXC"
-}
+RankBase = [
+  (500000, "E"),
+  (700000, "D"),
+  (800000, "C"),
+  (900000, "B"),
+  (950000, "S"),
+  (980000, "SS"),
+  (1000000, "SSS"),
+  (1000001, "EXC")
+]
 
 IRCColor = {
   'white': u'\u000300',
@@ -86,9 +86,9 @@ LvColor = {
 }
 
 def getRank(score):
-  for k, v in RankBase:
-    if score < k:
-      return v
+  for rb in RankBase:
+    if score < rb[0]:
+      return rb[1]
 
 def getHttpContents(url):
   try:
@@ -252,10 +252,10 @@ def getUserHistory(rival_id):
     map(lambda _: logging.info(user_name + ' %(date)s %(music)s %(difficulty)s %(score)s %(place)s'%_), playHistory)
     map(lambda _: r.lpush('recent_history', '%(date)s\t%(music)s\t%(difficulty)s\t%(score)s\t%(place)s'%_+'\t'+user_name+'\t'+now()), playHistory) 
     for row in playHistory :
-      score = int(playHistory["score"])
-      difficulty = playHistory["difficulty"]
+      score = int(row["score"])
+      difficulty = row["difficulty"]
       rank = getRank(score)
-      r.lpush('IRC_HISTORY', u'\u0002[%s] %s - %s%s\u000f - \u0002%s%d\u000f - \u0002%s - %s'%(username, playHistory['music'], LvColor[difficulty], difficulty, RankColor[rank], score, playHistory['date'], playHistory['place']))
+      r.lpush('IRC_HISTORY', u'\u0002[%s] %s - %s%s\u000f - \u0002%s%d\u000f - \u0002%s - %s'%(user_name, row['music'], LvColor[difficulty], difficulty, RankColor[rank], score, row['date'], row['place']))
 
     if update_date:
       r.hset('last_update', rival_id, update_date)
