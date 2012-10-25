@@ -36,6 +36,60 @@ def unescape(html):
   html = html.replace(u'&amp;', u'&')
   return html
 
+RankBase = {
+  500000 : "E",
+  700000 : "D",
+  800000 : "C",
+  900000 : "B",
+  950000 : "S",
+  980000 : "SS",
+  1000000 : "SSS",
+  1000001 : "EXC"
+}
+
+IRCColor = {
+  'white': u'\u000300',
+  'black': u'\u000301',
+  'dark_blue': u'\u000302',
+  'dark_green': u'\u000303',
+  'light_red': u'\u000304',
+  'dark_red': u'\u000305',
+  'magenta': u'\u000306',
+  'orange': u'\u000307',
+  'yellow': u'\u000308',
+  'light_green': u'\u000309',
+  'cyan': u'\u000310',
+  'light_cyan': u'\u000311',
+  'light_blue': u'\u000312',
+  'light_magenta': u'\u000313',
+  'gray': u'\u000314',
+  'light_gray': u'\u000315',
+  'reset': u'\u000f'
+}
+
+RankColor = {
+  "E" : IRCColor['gray'],
+  "D" : IRCColor['gray'],
+  "C" : IRCColor['light_blue'],
+  "B" : IRCColor['light_cyan'],
+  "A" : IRCColor['light_green'],
+  "S" : IRCColor['dark_green'],
+  "SS" : IRCColor['orange'],
+  "SSS" : IRCColor['dark_red'],
+  "EXC" : IRCColor['yellow'] + u',01'
+}
+
+LvColor = {
+  "BASIC" : IRCColor['dark_green'],
+  "ADVANCED" : IRCColor['orange'],
+  "EXTREME" : IRCColor['dark_red']
+}
+
+def getRank(score):
+  for k, v in RankBase:
+    if score < k:
+      return v
+
 def getHttpContents(url):
   try:
     http = httplib2.Http()
@@ -197,6 +251,12 @@ def getUserHistory(rival_id):
     map(lambda _: r.lpush(history_key, '%(date)s:%(music)s:%(difficulty)s:%(score)s'%_), playHistory)
     map(lambda _: logging.info(user_name + ' %(date)s %(music)s %(difficulty)s %(score)s %(place)s'%_), playHistory)
     map(lambda _: r.lpush('recent_history', '%(date)s\t%(music)s\t%(difficulty)s\t%(score)s\t%(place)s'%_+'\t'+user_name+'\t'+now()), playHistory) 
+    for row in playHistory :
+      score = int(playHistory["score"])
+      difficulty = playHistory["difficulty"]
+      rank = getRank(score)
+      r.lpush('IRC_HISTORY', u'\u0002[%s] %s - %s%s\u000f - \u0002%s%d\u000f - \u0002%s - %s'%(username, playHistory['music'], LvColor[difficulty], difficulty, RankColor[rank], score, playHistory['date'], playHistory['place']))
+
     if update_date:
       r.hset('last_update', rival_id, update_date)
     return [ ((u'%(date)s:%(music)s:%(difficulty)s:%(score)s:{0}'.format(rival_id)%_).encode('utf-8'), (u'%(music)s:%(difficulty)s'%_).encode('utf-8'), int(_['score']), _['date'].encode('utf-8')) for _ in playHistory ]
