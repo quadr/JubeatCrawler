@@ -40,7 +40,8 @@ RankBase = [
   (500000, "E"),
   (700000, "D"),
   (800000, "C"),
-  (900000, "B"),
+  (850000, "B"),
+  (900000, "A"),
   (950000, "S"),
   (980000, "SS"),
   (1000000, "SSS"),
@@ -70,12 +71,12 @@ IRCColor = {
 RankColor = {
   "E" : IRCColor['gray'],
   "D" : IRCColor['gray'],
-  "C" : IRCColor['light_blue'],
-  "B" : IRCColor['light_cyan'],
-  "A" : IRCColor['light_green'],
+  "C" : IRCColor['dark_red'],
+  "B" : IRCColor['light_red'],
+  "A" : IRCColor['light_blue'],
   "S" : IRCColor['dark_green'],
-  "SS" : IRCColor['orange'],
-  "SSS" : IRCColor['dark_red'],
+  "SS" : IRCColor['cyan'],
+  "SSS" : IRCColor['light_green'],
   "EXC" : IRCColor['yellow'] + u',01'
 }
 
@@ -255,7 +256,7 @@ def getUserHistory(rival_id):
       score = int(row["score"])
       difficulty = row["difficulty"]
       rank = getRank(score)
-      r.lpush('IRC_HISTORY', u'\u0002[%s] %s - %s%s\u000f - \u0002%s%d\u000f - \u0002%s - %s'%(user_name, row['music'], LvColor[difficulty], difficulty, RankColor[rank], score, row['date'], row['place']))
+      r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s\u000f - %s%d\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], RankColor[rank], score, row['date'], row['place']))
 
     if update_date:
       r.hset('last_update', rival_id, update_date)

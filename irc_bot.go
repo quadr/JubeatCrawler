@@ -140,6 +140,9 @@ func main() {
 	c.AddHandler("PRIVMSG", func(conn *irc.Conn, line *irc.Line) {
 		if len(line.Args) == 2 && line.Args[0][0] == '#' {
 			cmds := strings.Fields(line.Args[1])
+			if line.Nick == "s" {
+				cmds = cmds[1:]
+			}
 			if len(cmds) > 0 && len(cmds[0]) > 2 && cmds[0][0] == '!' {
 				switch cmds[0][1:] {
 				case "선곡":
