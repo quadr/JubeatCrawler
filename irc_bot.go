@@ -17,14 +17,14 @@ var msg = make(chan string, 256)
 
 type MusicInfo struct {
 	title, artist string
-	bpm           int
+	bpm           string
 	diffculty     string
 	lv            int
 	notes         int
 }
 
 func (m *MusicInfo) String() string {
-	return fmt.Sprintf("%s - %s - %s - %d - Notes:%d - BPM:%d", m.title, m.artist, m.diffculty, m.lv, m.notes, m.bpm)
+	return fmt.Sprintf("Lv.%d - %s - %s - %s - Notes:%d - BPM:%s", m.lv, m.title, m.artist, m.diffculty, m.notes, m.bpm)
 }
 
 func atoi(s string) (i int) {
@@ -46,7 +46,7 @@ func parseMusicInfo(raw string) (info []*MusicInfo) {
 			title:     s[0],
 			artist:    s[1],
 			diffculty: str_difficulty[i],
-			bpm:       atoi(s[2]),
+			bpm:       s[2],
 			lv:        atoi(s[i+3]),
 			notes:     atoi(s[i+6]),
 		}
@@ -100,7 +100,6 @@ func readLog() {
 
 func selectMusic(lv int, conn *irc.Conn) {
 	var info *MusicInfo
-	log.Println(lv)
 	switch {
 	case lv == 0:
 		info = musicinfos.allSongs[rand.Int31n(int32(len(musicinfos.allSongs)))]
