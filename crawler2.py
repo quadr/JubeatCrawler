@@ -7,6 +7,7 @@ import time
 import gevent
 import logging
 import unicodedata
+import collections
 from gevent import monkey
 from datetime import datetime, timedelta
 from BeautifulSoup import BeautifulSoup
@@ -90,6 +91,40 @@ def getRank(score):
   for rb in RankBase:
     if score < rb[0]:
       return rb[1]
+
+MusicInfo = collections.namedtuple('MusicInfo', ['title', 'artist', 'difficulty', 'bpm', 'lv', 'notes'])
+
+DifficultyString = ["BASIC", "ADVANCED", "EXTREME"]
+
+def parseMusicInfo(raw):
+  s = raw.split("\t")
+  ret = []
+  if len(s) == 1:
+    return ret
+  for i in xrange(0,3):
+    ret.append(MusicInfo(
+      title      = s[0],
+      artist     = s[1],
+      difficulty = DifficultyString[i],
+      bpm        = s[2],
+      lv         = int(s[i+3]),
+      notes      = int(s[i+6])))
+  return ret
+
+def makeMusicInfoList():
+  rawLines = open('list.txt', 'r').read().split('\n')
+  musicList = []
+  for rawLine in rawLines:
+    musicList += parseMusicInfo(rawLine)
+  return musicList
+
+
+MusicInfoList = makeMusicInfoList()
+MusicNoteDict = dict(map(lambda m: ((m.title,m.difficulty), m.notes), MusicInfoList))
+
+# example: calcConvertedScore('only my railgun', 'EXTREME', 999031) -> 0.600
+def calcConvertedScore(title, difficulty, score):
+  return (1000000 - score) * MusicNoteDict[(title,difficulty)] / 900000.0
 
 def getHttpContents(url):
   try:
@@ -256,7 +291,8 @@ def getUserHistory(rival_id):
       score = int(row["score"])
       difficulty = row["difficulty"]
       rank = getRank(score)
-      r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s\u000f - %s%d\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], RankColor[rank], score, row['date'], row['place']))
+      convertedScore = calcConvertedScore(row['music'], difficulty, score) / 0.3
+      r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s\u000f - %s%d (%.2f)\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], RankColor[rank], score, convertedScore, row['date'], row['place']))
 
     if update_date:
       r.hset('last_update', rival_id, update_date)
