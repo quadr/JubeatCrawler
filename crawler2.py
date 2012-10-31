@@ -112,7 +112,7 @@ def parseMusicInfo(raw):
   return ret
 
 def makeMusicInfoList():
-  rawLines = open('list.txt', 'r').read().split('\n')
+  rawLines = open('list.txt', 'r').read().decode('utf-8').split('\n')
   musicList = []
   for rawLine in rawLines:
     musicList += parseMusicInfo(rawLine)
