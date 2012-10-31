@@ -293,7 +293,10 @@ def getUserHistory(rival_id):
       rank = getRank(score)
       convertedScore = calcConvertedScore(row['music'], difficulty, score) / 0.3
       r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s\u000f - %s%d (%.2f)\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], RankColor[rank], score, convertedScore, row['date'], row['place']))
-
+      if score == 1000000:
+        r.lpush('IRC_HISTORY', u'\u0002[알림] %s님이 %s%s\u000f\u0002를 %sEXCELLENT\u000f \u0002했습니다!!'%(user_name, LvColor[difficulty], row['music'], RankColor["EXC"]))
+      elif int(round(convertedScore)) <= 2:
+        r.lpush('IRC_HISTORY', u'\u0002[알림] %s님이 %s%s\u000f\u0002를 %s%dgr\u000f \u0002했습니다. orz'%(user_name, LvColor[difficulty], row['music'], RankColor["EXC"], int(round(convertedScore))))
     if update_date:
       r.hset('last_update', rival_id, update_date)
     return [ ((u'%(date)s:%(music)s:%(difficulty)s:%(score)s:{0}'.format(rival_id)%_).encode('utf-8'), (u'%(music)s:%(difficulty)s'%_).encode('utf-8'), int(_['score']), _['date'].encode('utf-8')) for _ in playHistory ]
