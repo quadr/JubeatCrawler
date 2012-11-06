@@ -88,7 +88,7 @@ func readLog() {
 		log.Println("Redis Connect Error : ", err)
 	}
 	defer c.Close()
-	c.Do("SELECT", 12)
+	c.Do("SELECT", 11)
 	for {
 		result, _ := redis.MultiBulk(c.Do("BRPOP", "IRC_HISTORY", 0))
 
