@@ -92,8 +92,6 @@ def getRank(score):
     if score < rb[0]:
       return rb[1]
 
-DifficultyString = ["BASIC", "ADVANCED", "EXTREME"]
-""" Disable Great Detect Feature
 MusicInfo = collections.namedtuple('MusicInfo', ['title', 'artist', 'difficulty', 'bpm', 'lv', 'notes'])
 
 DifficultyString = ["BASIC", "ADVANCED", "EXTREME"]
@@ -126,8 +124,9 @@ MusicNoteDict = dict(map(lambda m: ((m.title,m.difficulty), m.notes), MusicInfoL
 
 # example: calcConvertedScore('only my railgun', 'EXTREME', 999031) -> 0.600
 def calcConvertedScore(title, difficulty, score):
-  return (1000000 - score) * MusicNoteDict[(title,difficulty)] / 900000.0
-"""
+  key = (title,difficulty)
+  if key in MusicNoteDict:
+    return (1000000 - score) * MusicNoteDict[key] / 900000.0
 
 def getHttpContents(url):
   try:
@@ -297,13 +296,15 @@ def getUserHistory(rival_id):
       score = int(row["score"])
       difficulty = row["difficulty"]
       rank = getRank(score)
-      #convertedScore = calcConvertedScore(row['music'], difficulty, score) / 0.3
-      #r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s\u000f - %s%d (%.2f)\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], RankColor[rank], score, convertedScore, row['date'], row['place']))
-      r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s\u000f - %s%d \u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], RankColor[rank], score, row['date'], row['place']))
+      convertedScore = calcConvertedScore(row['music'], difficulty, score) / 0.3
+      if convertedScore is not None:
+        r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s\u000f - %s%d (%.2f)\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], RankColor[rank], score, convertedScore, row['date'], row['place']))
+      else:
+        r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s\u000f - %s%d \u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], RankColor[rank], score, row['date'], row['place']))
       if score == 1000000:
         r.lpush('IRC_HISTORY', u'\u0002[알림] %s님이 %s%s\u000f\u0002를 %sEXCELLENT\u000f \u0002했습니다!!'%(user_name, LvColor[difficulty], row['music'], RankColor["EXC"]))
-      #elif int(round(convertedScore)) <= 2:
-      #  r.lpush('IRC_HISTORY', u'\u0002[알림] %s님이 %s%s\u000f\u0002를 %s%dgr\u000f \u0002했습니다. orz'%(user_name, LvColor[difficulty], row['music'], RankColor["EXC"], int(round(convertedScore))))
+      elif convertedScore is not None and int(round(convertedScore)) <= 2:
+        r.lpush('IRC_HISTORY', u'\u0002[알림] %s님이 %s%s\u000f\u0002를 %s%dgr\u000f \u0002했습니다. orz'%(user_name, LvColor[difficulty], row['music'], RankColor["EXC"], int(round(convertedScore))))
     if update_date:
       r.hset('last_update', rival_id, update_date)
     return [ ((u'%(date)s:%(music)s:%(difficulty)s:%(score)s:{0}'.format(rival_id)%_).encode('utf-8'), (u'%(music)s:%(difficulty)s'%_).encode('utf-8'), int(_['score']), _['date'].encode('utf-8')) for _ in playHistory ]
