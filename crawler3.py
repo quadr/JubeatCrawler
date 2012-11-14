@@ -289,24 +289,27 @@ def getUserHistory(rival_id):
     
     playHistory.reverse()
     history_key = 'history:%d'%rival_id
-    map(lambda _: r.lpush(history_key, '%(date)s:%(music)s:%(difficulty)s:%(score)s'%_), playHistory)
     map(lambda _: logging.info(user_name + ' %(date)s %(music)s %(difficulty)s %(score)s %(place)s'%_), playHistory)
-    map(lambda _: r.lpush('recent_history', '%(date)s\t%(music)s\t%(difficulty)s\t%(score)s\t%(place)s'%_+'\t'+user_name+'\t'+now()), playHistory) 
     for row in playHistory :
       score = int(row["score"])
       difficulty = row["difficulty"]
       rank = getRank(score)
-      convertedScore = calcConvertedScore(row['music'], difficulty, score) / 0.3
+      convertedScore = calcConvertedScore(row['music'], difficulty, score)
       if convertedScore is not None:
+        convertedScore = convertedScore / 0.3
+      if convertedScore is not None or convertedScore > 0:
         r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s\u000f - %s%d (%.2f)\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], RankColor[rank], score, convertedScore, row['date'], row['place']))
       else:
-        r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s\u000f - %s%d \u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], RankColor[rank], score, row['date'], row['place']))
+        r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s\u000f - %s%d\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], RankColor[rank], score, row['date'], row['place']))
       if score == 1000000:
         r.lpush('IRC_HISTORY', u'\u0002[알림] %s님이 %s%s\u000f\u0002를 %sEXCELLENT\u000f \u0002했습니다!!'%(user_name, LvColor[difficulty], row['music'], RankColor["EXC"]))
       elif convertedScore is not None and int(round(convertedScore)) <= 2:
         r.lpush('IRC_HISTORY', u'\u0002[알림] %s님이 %s%s\u000f\u0002를 %s%dgr\u000f \u0002했습니다. orz'%(user_name, LvColor[difficulty], row['music'], RankColor["EXC"], int(round(convertedScore))))
+
     if update_date:
       r.hset('last_update', rival_id, update_date)
+    map(lambda _: r.lpush(history_key, '%(date)s:%(music)s:%(difficulty)s:%(score)s'%_), playHistory)
+    map(lambda _: r.lpush('recent_history', '%(date)s\t%(music)s\t%(difficulty)s\t%(score)s\t%(place)s'%_+'\t'+user_name+'\t'+now()), playHistory) 
     return [ ((u'%(date)s:%(music)s:%(difficulty)s:%(score)s:{0}'.format(rival_id)%_).encode('utf-8'), (u'%(music)s:%(difficulty)s'%_).encode('utf-8'), int(_['score']), _['date'].encode('utf-8')) for _ in playHistory ]
 
   except Exception, e:
