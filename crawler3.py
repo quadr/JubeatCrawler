@@ -226,9 +226,13 @@ def updateContestData(contest_id):
     music_list_key = 'music_list:%d'%contest_id
     if not r.exists(music_list_key):
       table = c.find(id='contest_theme')
-      rows = table.findAll('tr')[1:]
+      rows = table.findAll('tr', attrs={'class':'theme'})
       for row in rows:
-        music = ':'.join(map(lambda _: unescape(_.text), row.findAll('td'))[1:3])
+        cols = row.findAll('td')
+        music_title = unescape(cols[1].text)
+        logging.Debug(int(cols[2].find('img')['alt']))
+        difficulty = DifficultyString[int(cols[2].find('img')['alt'])]
+        music = music_title + ':' + difficulty
         r.rpush(music_list_key, music)
 
     rows = c.find(id='contest_ranking').findAll('a')
@@ -327,7 +331,6 @@ def updateContestHistory():
     contest_members = dict(zip(current_contest_list, [ job.value for job in jobs ]))
 
     member_list = r.hgetall('rival_id')
-    logging.info(member_list)
     jobs = [ gevent.spawn(getUserHistory, int(rival_id)) for rival_id, user in member_list.iteritems() ]
     gevent.joinall(jobs)
     
