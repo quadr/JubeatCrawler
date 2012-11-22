@@ -120,18 +120,24 @@ func main() {
 	c.SSL = true
 	c.SSLConfig = &tls.Config{InsecureSkipVerify: true}
 
+	go readLog()
 	disconnected := make(chan bool)
+	stopRead := make(chan bool)
 	c.AddHandler("connected", func(conn *irc.Conn, line *irc.Line) {
 		conn.Join("#jubeater")
 	})
 
 	c.AddHandler("JOIN", func(conn *irc.Conn, line *irc.Line) {
 		if line.Nick == conn.Me.Nick {
-			go readLog()
 			go func() {
-				for m := range msg {
-					log.Println(m)
-					conn.Privmsg("#jubeater", m)
+				for {
+					select {
+					case m := <-msg:
+						log.Println(m)
+						conn.Privmsg("#jubeater", m)
+					case <-stopRead:
+						return
+					}
 				}
 			}()
 		}
@@ -158,11 +164,16 @@ func main() {
 		}
 	})
 
-	c.AddHandler("disconnected", func(conn *irc.Conn, line *irc.Line) { disconnected <- true })
+	c.AddHandler("disconnected", func(conn *irc.Conn, line *irc.Line) {
+		stopRead <- true
+		disconnected <- true
+	})
 
-	if err := c.Connect("localhost:16661"); err != nil {
-		log.Println("Connection error: ", err)
-		return
+	for {
+		if err := c.Connect("localhost:16661"); err != nil {
+			log.Println("Connection error: ", err)
+			return
+		}
+		<-disconnected
 	}
-	<-disconnected
 }
