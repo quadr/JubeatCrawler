@@ -87,6 +87,12 @@ LvColor = {
   "EXTREME" : IRCColor['dark_red']
 }
 
+DifficultyShortString = {
+  "BASIC" : "BSC",
+  "ADVANCED" : "ADV",
+  "EXTREME" : "EXT"
+}
+
 def getRank(score):
   for rb in RankBase:
     if score < rb[0]:
@@ -230,7 +236,6 @@ def updateContestData(contest_id):
       for row in rows:
         cols = row.findAll('td')
         music_title = unescape(cols[1].text)
-        logging.Debug(int(cols[2].find('img')['alt']))
         difficulty = DifficultyString[int(cols[2].find('img')['alt'])]
         music = music_title + ':' + difficulty
         r.rpush(music_list_key, music)
@@ -302,13 +307,13 @@ def getUserHistory(rival_id):
       if convertedScore is not None:
         convertedScore = convertedScore / 0.3
       if convertedScore is not None or convertedScore > 0:
-        r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s\u000f - %s%d (%.2f)\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], RankColor[rank], score, convertedScore, row['date'], row['place']))
+        r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s (%s)\u000f - %s%d (%.2f)\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor[rank], score, convertedScore, row['date'], row['place']))
       else:
-        r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s\u000f - %s%d\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], RankColor[rank], score, row['date'], row['place']))
+        r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s (%s)\u000f - %s%d\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor[rank], score, row['date'], row['place']))
       if score == 1000000:
-        r.lpush('IRC_HISTORY', u'\u0002[알림] %s님이 %s%s\u000f\u0002를 %sEXCELLENT\u000f \u0002했습니다!!'%(user_name, LvColor[difficulty], row['music'], RankColor["EXC"]))
+        r.lpush('IRC_HISTORY', u'\u0002[알림] %s님이 %s%s (%s)\u000f\u0002를 %sEXCELLENT\u000f \u0002했습니다!!'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor["EXC"]))
       elif convertedScore is not None and int(round(convertedScore)) <= 2:
-        r.lpush('IRC_HISTORY', u'\u0002[알림] %s님이 %s%s\u000f\u0002를 %s%dgr\u000f \u0002했습니다. orz'%(user_name, LvColor[difficulty], row['music'], RankColor["EXC"], int(round(convertedScore))))
+        r.lpush('IRC_HISTORY', u'\u0002[알림] %s님이 %s%s (%s)\u000f\u0002를 %s%dgr\u000f \u0002했습니다. orz'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor["EXC"], int(round(convertedScore))))
 
     if update_date:
       r.hset('last_update', rival_id, update_date)

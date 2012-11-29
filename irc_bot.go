@@ -172,8 +172,8 @@ func main() {
 	for {
 		if err := c.Connect("localhost:16661"); err != nil {
 			log.Println("Connection error: ", err)
-			return
 		}
 		<-disconnected
+		time.Sleep(10*time.Second)
 	}
 }
