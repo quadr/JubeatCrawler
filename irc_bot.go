@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"sort"
+	"math"
 )
 
 var msg = make(chan string, 256)
@@ -52,6 +54,10 @@ func parseMusicInfo(raw string) (info []*MusicInfo) {
 		}
 	}
 	return
+}
+
+func adjustLevel(lv int) int {
+	return int(math.Max(math.Min(float64(lv), 10), 1))
 }
 
 type MusicInfoContainer struct {
@@ -98,19 +104,27 @@ func readLog() {
 	}
 }
 
-func selectMusic(lv int, conn *irc.Conn) {
+func selectMusic(conn *irc.Conn, lv... int) {
 	var info *MusicInfo
-	switch {
-	case lv == 0:
-		info = musicinfos.allSongs[rand.Int31n(int32(len(musicinfos.allSongs)))]
-	case lv > 0 && lv < 11:
-		l := musicinfos.lvSongs[lv]
-		info = l[rand.Int31n(int32(len(l)))]
+	var musiclist []*MusicInfo
+	if len(lv) == 1 {
+		switch {
+		case lv[0] == 0:
+			musiclist = musicinfos.allSongs
+		case lv[0] > 0 && lv[0] < 11:
+			musiclist = musicinfos.lvSongs[lv[0]]
+		}
+	} else if len(lv) == 2 {
+		lv[0], lv[1] = adjustLevel(lv[0]), adjustLevel(lv[1])
+		for i := lv[0]; i <= lv[1] ; i++ {
+			musiclist = append(musiclist, musicinfos.lvSongs[i]...)
+		}
 	}
-	if info == nil {
+	if len(musiclist) == 0 {
 		conn.Privmsg("#jubeater", "잘못입력하셨습니다.")
 		return
 	}
+	info = musiclist[rand.Int31n(int32(len(musiclist)))]
 	conn.Privmsg("#jubeater", info.String())
 }
 
@@ -152,11 +166,17 @@ func main() {
 			if len(cmds) > 0 && len(cmds[0]) > 2 && cmds[0][0] == '!' {
 				switch cmds[0][1:] {
 				case "선곡":
-					lv := 0
+					var lv []int
 					if len(cmds) > 1 {
-						lv = atoi(cmds[1])
+						lvs := strings.Split(cmds[1], "-")
+						for _, l := range lvs {
+							lv = append(lv, atoi(l))
+						}
+					} else {
+						lv = append(lv, 0)
 					}
-					selectMusic(lv, conn)
+					sort.Ints(lv)
+					selectMusic(conn, lv...)
 				default:
 					conn.Privmsg("#jubeater", "잘못된 명령입니다.")
 				}
