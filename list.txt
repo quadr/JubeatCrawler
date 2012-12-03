@@ -1,3 +1,18 @@
+Kiss & Ride	中塚武	130	3	7	9	206	460	705
+Rocknrolla!	[Champagne]	159	3	7	8	210	486	623
+15 Doors	moumoon	163	3	6	8	192	362	510
+Parachute	トクマルシューゴ	120	4	5	8	225	345	518
+グローランプ	banbi	230	3	6	8	208	401	472
+On and On	中塚武	130	3	7	8	234	376	535
+愛する覚悟	シシド・カフカ	103-206	2	5	8	138	264	555
+嘘憑きとサルヴァドール	小南泰葉	228	4	8	10	155	459	708
+マジLOVE1000%	ST☆RISH	129	2	7	9	171	383	539
+LANA - キロクノカケラ -	TOMOSUKE×Jazzin'park	84-168	3	6	8	188	372	493
+Across the nightmare	Jimmy Weckl	150	6	7	9	342	481	636
+Happy	Sota Fujimori	190	6	8	9	331	478	601
+Vanity	Vivian	125-150	5	7	9	297	592	806
+SILVER☆DREAM	jun	192	6	7	9	385	478	616
+Holy Snow	Mutsuhiko Izumi	130-160	5	8	10	254	615	735
 いっぽんでもニンジン	なぎらけんいち	137	3	6	9	208	348	609	
 Find your way	J.Speaks	130	2	5	8	214	417	620	
 FANTASTIC★DREAMER feat.SO-TA,Rhyzm Horse,Yoonji	MAYA feat.SO-TA,Rhyzm Horse,Yoonji	128	3	8	9	266	614	796	
@@ -29,6 +44,7 @@ POINT ZERO	猫叉master+	188	3	6	9	191	413	693
 405nm (Ryu☆mix)	Another Infinity	177	7	9	10	511	770	908	
 †渚の小悪魔ラヴリィ〜レイディオ†	夏色ビキニのPrim	190	6	8	10	365	590	875	
 Twinkle Wonderland	Qrispy Joybox feat.Sana	188	4	6	8	202	393	617
+milky ice bear	S-C-U	145	4	6	8	261	553	717
 アストライアの双皿	ZODIACSYNDICATE	173	6	9	10	507	776	988	
 Amalgamation	Mystic Moon	166	4	8	9	271	521	722	
 quaver♪	Risk Junk	182-186	5	8	9	342	578	641	
@@ -62,7 +78,7 @@ JOMANDA	DJ YOSHITAKA	90-195	7	9	10	480	757	922
 DOUBLE IMPACT	DOUBLE IMPACT	265	5	7	10	372	462	811	
 THIS NIGHT (jubeat EDITION)	TЁЯRA	160	2	5	9	177	375	719	
 Devil Fish Dumpling	96	166	5	7	10	361	512	733	
-TWINKLE♡HEART	jun	185	3	7	9	254	527	722	
+TWINKLE HEART	jun	185	3	7	9	254	527	722	
 トルコ行進曲	T.M. Orchestra	150-199	4	7	10	330	528	827	
 ナナホシ	S-C-U	166	5	7	9	287	442	582	
 HEAT-BIT-HIT-BEAT	V.C.O	180	5	9	10	380	795	918	
