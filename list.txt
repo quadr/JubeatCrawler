@@ -41,7 +41,7 @@ quaver♪	Risk Junk	182-186	5	8	9	342	578	641
 squall	猫叉Master+	190	5	7	9	298	529	657	
 Dragontail Butterfly	Tom-H@ck feat.Nadia	170	4	7	9	278	534	711	
 NIGHT FLIGHT	小野秀幸	180	4	7	9	308	568	716	
-†渚の小悪魔ラヴリィ～レイディオ†	夏色ビキニのPrim	190	6	8	10	365	590	875	
+†渚の小悪魔ラヴリィ〜レイディオ†	夏色ビキニのPrim	190	6	8	10	365	590	875	
 Fantasia	TЁЯRA	165	4	7	9	301	480	717	
 BLUE STRAGGLER	L.E.D.	160	5	9	10	321	605	780	
 フー・フローツ	Nanako	180	3	5	9	176	347	591	
@@ -166,7 +166,7 @@ Love at First Sight	Fear, and Loathing in Las Vegas	160	3	7	9	260	565	677
 Let's ダバダバ	(POLYSICS)	169	4	7	9	234	482	763	
 Rocknrolla!	[Champagne]	159	3	7	8	210	486	623	
 Are U Ready?	mini	130	3	6	8	206	436	584	
-R.P.G.～Rockin' Playing Game	SuG	205	4	7	9	318	543	869	
+R.P.G.〜Rockin' Playing Game	SuG	205	4	7	9	318	543	869	
 only my railgun	fripSide	143	3	6	8	219	392	558	
 カーニバる？	ナオト・インティライミ	69-165	3	7	9	207	453	666	
 君をのせて feat.sayurina	新井大樹	140	2	6	8	125	429	693	
