@@ -167,8 +167,10 @@ def login(kid=None, password=None):
   cookie = Cookie.SimpleCookie(res['set-cookie']).values()[0].OutputString(attrs=[])
   expires = Cookie.SimpleCookie(res['set-cookie']).values()[0]['expires']
   loginUrl = 'https://p.eagate.573.jp/gate/p/login.html'
-  loginHeader = { 'content-type' : 'application/x-www-form-urlencoded', 'cookie': cookie }
-  params = urllib.urlencode(r.hgetall('auth_info'))
+  loginHeader = { 'content-type' : 'application/x-www-form-urlencoded', 'cookie': cookie, 'Origin': 'https://p.eagate.573.jp', 'Referer': 'https://p.eagate.573.jp/gate/p/login.html' }
+  auth_info = r.hgetall('auth_info')
+  auth_info['OTP'] = ''
+  params = urllib.urlencode(auth_info)
   res, c = http.request(loginUrl, 'POST', params, headers=loginHeader)
   if res.status == 302 :
     logging.info('login success')

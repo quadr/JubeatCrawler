@@ -3,7 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"fmt"
-	irc "github.com/fluffle/goirc/client"
+	irc "github.com/quadr/goirc/client"
 	redis "github.com/garyburd/redigo/redis"
 	"io/ioutil"
 	"log"
@@ -192,8 +192,9 @@ func main() {
 	for {
 		if err := c.Connect("localhost:16661"); err != nil {
 			log.Println("Connection error: ", err)
+		} else {
+			<-disconnected
 		}
-		<-disconnected
 		time.Sleep(10*time.Second)
 	}
 }
