@@ -130,10 +130,11 @@ def makeMusicInfoList():
 MusicInfoList = makeMusicInfoList()
 MusicNoteDict = dict(map(lambda m: ((m.title,m.difficulty), m.notes), MusicInfoList))
 
+# example of raw : "5733600:[996029, 994097, 958275]:[True, True, False]"
 def parseScoreInfo(raw):
     s = raw.split(':')
     ret = {
-        'title' : s[0],
+        'id'    : s[0],
         'score' : s[1][1:-1].replace(' ', '').split(','),
         'fc'    : s[2][1:-1].replace(' ', '').split(',')
     }
@@ -146,21 +147,29 @@ def calcConvertedScore(title, difficulty, score):
     return (1000000 - score) * MusicNoteDict[key] / 900000.0
 
 # example: calcUpdatedScore(57710029539329, 'only my railgun', 'EXTREME', 999031) -> -969
+# Also updates the db if best score is changed
 def calcUpdatedScore(rival_id, title, difficulty, score):
     if difficulty == 'BASIC': i = 0
     elif difficulty == 'ADVANCED': i = 1
     else: i = 2
 
     r = getRedis()
-    music_id = r.hget('music_id', title)
-    raw = r.hget('score:%d'%rival_id, music_id)
-    prev_score = parseScoreInfo(raw)['score'][i]
-    #prev_fc = r.hget(music_id, 'fc')[i]
     
+    user_name = r.hget("rival_id", rival_id)
+    raw = r.hget('score:%d'%rival_id, title)
+    prev = parseScoreInfo(raw)
+    prev_score = prev['score'][i]
+
     result = score - int(prev_score)
-    if result > 0: return '+' + str(result)
-    elif result < 0: return '-' + str(0 - result)
-    else: return '0'
+    if result > 0:
+        prev['score'][i] = score
+        r.hset('score:%d'%rival_id, title, '%(id)s:%(score)s:%(fc)s'%prev)
+        print user_name + 'updated score of [' + title + ']'
+        return '+' + str(result)
+    elif result < 0:
+        return '-' + str(0 - result)
+    else:
+        return '0'
 
 def getHttpContents(url):
   try:
@@ -322,13 +331,11 @@ def getUserScore(rival_id):
                 else:
                     scoredata['score'].append(int(score.text))
                 scoredata['fc'].append(int(score.find('div')['class'][-1]) == 1)
-            print scoredata['music'] + " : " + scoredata['music_id']
             playScore.append(scoredata)
 
     score_key = 'score:%d'%rival_id
     map(lambda _: logging.info(user_name + '%(music)s + %(score)s + %(fc)s'%_), playScore)
-    map(lambda _: r.hset('music_id', '%(music)s'%_, '%(music_id)s'%_), playScore)
-    map(lambda _: r.hset(score_key, '%(music_id)s'%_, '%(music)s:%(score)s:%(fc)s'%_), playScore)
+    map(lambda _: r.hset(score_key, '%(music)s'%_, '%(music_id)s:%(score)s:%(fc)s'%_), playScore)
 
     r.lpush('IRC_HISTORY', u'\u0002[%s]님의 스코어가 업데이트 되었습니다.'%(user_name))
     
@@ -385,13 +392,12 @@ def getUserHistory(rival_id):
       rank = getRank(score)
       convertedScore = calcConvertedScore(row['music'], difficulty, score)
       updatedScore = calcUpdatedScore(rival_id, row['music'], difficulty, score)
-      print updatedScore
       if convertedScore is not None:
         convertedScore = convertedScore / 0.3
       if convertedScore is not None or convertedScore > 0:
-        r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s (%s)\u000f - %s%d (%.2f)\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor[rank], score, convertedScore, row['date'], row['place']))
+        r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s (%s)\u000f - %s%d (%.2f/%s)\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor[rank], score, convertedScore, updatedScore, row['date'], row['place']))
       else:
-        r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s (%s)\u000f - %s%d\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor[rank], score, row['date'], row['place']))
+        r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s (%s)\u000f - %s%d (%s)\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor[rank], score, updatedScore, row['date'], row['place']))
       if score == 1000000:
         r.lpush('IRC_HISTORY', u'\u0002[알림] %s님이 %s%s (%s)\u000f\u0002를 %sEXCELLENT\u000f \u0002했습니다!!'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor["EXC"]))
       elif convertedScore is not None and int(round(convertedScore)) <= 2:
