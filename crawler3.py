@@ -130,11 +130,37 @@ def makeMusicInfoList():
 MusicInfoList = makeMusicInfoList()
 MusicNoteDict = dict(map(lambda m: ((m.title,m.difficulty), m.notes), MusicInfoList))
 
+def parseScoreInfo(raw):
+    s = raw.split(':')
+    ret = {
+        'title' : s[0],
+        'score' : s[1][1:-1].replace(' ', '').split(','),
+        'fc'    : s[2][1:-1].replace(' ', '').split(',')
+    }
+    return ret
+
 # example: calcConvertedScore('only my railgun', 'EXTREME', 999031) -> 0.600
 def calcConvertedScore(title, difficulty, score):
   key = (title,difficulty)
   if key in MusicNoteDict:
     return (1000000 - score) * MusicNoteDict[key] / 900000.0
+
+# example: calcUpdatedScore(57710029539329, 'only my railgun', 'EXTREME', 999031) -> -969
+def calcUpdatedScore(rival_id, title, difficulty, score):
+    if difficulty == 'BASIC': i = 0
+    elif difficulty == 'ADVANCED': i = 1
+    else: i = 2
+
+    r = getRedis()
+    music_id = r.hget('music_id', title)
+    raw = r.hget('score:%d'%rival_id, music_id)
+    prev_score = parseScoreInfo(raw)['score'][i]
+    #prev_fc = r.hget(music_id, 'fc')[i]
+    
+    result = score - int(prev_score)
+    if result > 0: return '+' + str(result)
+    elif result < 0: return '-' + str(0 - result)
+    else: return '0'
 
 def getHttpContents(url):
   try:
@@ -311,7 +337,7 @@ def getUserScore(rival_id):
     return []
         
 def getUserHistory(rival_id):
-  try:
+  #try:
     r = getRedis()
     last_update = r.hget('last_update', rival_id)
     update_date = last_update
@@ -358,14 +384,14 @@ def getUserHistory(rival_id):
       difficulty = row["difficulty"]
       rank = getRank(score)
       convertedScore = calcConvertedScore(row['music'], difficulty, score)
+      updatedScore = calcUpdatedScore(rival_id, row['music'], difficulty, score)
+      print updatedScore
       if convertedScore is not None:
         convertedScore = convertedScore / 0.3
       if convertedScore is not None or convertedScore > 0:
         r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s (%s)\u000f - %s%d (%.2f)\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor[rank], score, convertedScore, row['date'], row['place']))
-        print "asdf"
       else:
         r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s (%s)\u000f - %s%d\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor[rank], score, row['date'], row['place']))
-        print "fuckyou"
       if score == 1000000:
         r.lpush('IRC_HISTORY', u'\u0002[알림] %s님이 %s%s (%s)\u000f\u0002를 %sEXCELLENT\u000f \u0002했습니다!!'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor["EXC"]))
       elif convertedScore is not None and int(round(convertedScore)) <= 2:
@@ -377,9 +403,9 @@ def getUserHistory(rival_id):
     map(lambda _: r.lpush('recent_history', '%(date)s\t%(music)s\t%(difficulty)s\t%(score)s\t%(place)s'%_+'\t'+user_name+'\t'+now()), playHistory) 
     return [ ((u'%(date)s:%(music)s:%(difficulty)s:%(score)s:{0}'.format(rival_id)%_).encode('utf-8'), (u'%(music)s:%(difficulty)s'%_).encode('utf-8'), int(_['score']), _['date'].encode('utf-8')) for _ in playHistory ]
 
-  except Exception, e:
-    logging.error('getUserHistory Error: %s(%d)'%(e, rival_id))
-    return []
+  #except Exception, e:
+   # logging.error('getUserHistory Error: %s(%d)'%(e, rival_id))
+    #return []
 
 def updateContestHistory():
   try:
