@@ -14,6 +14,8 @@ from BeautifulSoup import BeautifulSoup
 
 monkey.patch_all(thread=False)
 
+playScoreUrl = 'http://p.eagate.573.jp/game/jubeat/saucer/p/playdata/music.html?rival_id=%d&page=%d'
+musicPageUrl = 'http://p.eagate.573.jp/game/jubeat/saucer/p/playdata/music_detail.html?rival_id=%d&mid=%d'
 playHistoryUrl = 'http://p.eagate.573.jp/game/jubeat/saucer/p/playdata/history.html?rival_id=%d&page=%d'
 contestListUrl = 'http://p.eagate.573.jp/game/jubeat/saucer/p/contest/join_info.html?s=1&rival_id=%d'
 contestDataUrl = 'http://p.eagate.573.jp/game/jubeat/saucer/p/contest/detail.html?contest_id=%d'
@@ -258,6 +260,56 @@ def updateContestData(contest_id):
     logging.error('getContestData Error: %s(%d)'%(e, contest_id))
     return set()
 
+def getUserScore(rival_id):
+  try:
+    r = getRedis()
+    user_name = r.hget('rival_id', rival_id)
+
+    c = getHttpContents(playScoreUrl%(rival_id, 1))
+    print "Contents crawled"
+
+    playScore = []
+    pages = c.find(attrs={"class":"pager"}).findAll(attrs={"class":"number"})
+    for page in pages:
+        i = int(page.text)
+        c = getHttpContents(playScoreUrl%(rival_id, i))
+        if c is None:
+            return []
+
+        oddrows = c.findAll(attrs={"class":"odd"})
+        evenrows = c.findAll(attrs={"class":"even"})
+        rows = oddrows + evenrows
+        
+        #scoredata : music, bsc_score, bsc_fc, adv_score, adv_fc, ext_score, ext_fc
+        for row in rows:
+            #bsc adv ext
+            scores = [(row.contents[5]), row.contents[7], row.contents[9]]
+            scoredata = {}
+            scoredata['music'] = unescape(row.find('td', attrs={'class':'mname'}).find('a').text)
+            scoredata['music_id'] = row.find('td', attrs={'class':'mname'}).find('a')['href'][-8:-1]
+            scoredata['score'] = []
+            scoredata['fc'] = []
+            
+            for score in scores:
+                if score.text == "-":
+                    scoredata['score'].append(0)
+                else:
+                    scoredata['score'].append(int(score.text))
+                scoredata['fc'].append(int(score.find('div')['class'][-1]) == 1)
+            print scoredata['music'] + " : " + scoredata['music_id']
+            playScore.append(scoredata)
+
+    score_key = 'score:%d'%rival_id
+    map(lambda _: logging.info(user_name + '%(music)s + %(score)s + %(fc)s'%_), playScore)
+    map(lambda _: r.hset('music_id', '%(music)s'%_, '%(music_id)s'%_), playScore)
+    map(lambda _: r.hset(score_key, '%(music_id)s'%_, '%(music)s:%(score)s:%(fc)s'%_), playScore)
+
+    r.lpush('IRC_HISTORY', u'\u0002[%s]님의 스코어가 업데이트 되었습니다.'%(user_name))
+    
+  except Exception, e:
+    logging.error('getUserScore Error: %s(%d)'%(e, rival_id))
+    return []
+        
 def getUserHistory(rival_id):
   try:
     r = getRedis()
@@ -310,8 +362,10 @@ def getUserHistory(rival_id):
         convertedScore = convertedScore / 0.3
       if convertedScore is not None or convertedScore > 0:
         r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s (%s)\u000f - %s%d (%.2f)\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor[rank], score, convertedScore, row['date'], row['place']))
+        print "asdf"
       else:
         r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s (%s)\u000f - %s%d\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor[rank], score, row['date'], row['place']))
+        print "fuckyou"
       if score == 1000000:
         r.lpush('IRC_HISTORY', u'\u0002[알림] %s님이 %s%s (%s)\u000f\u0002를 %sEXCELLENT\u000f \u0002했습니다!!'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor["EXC"]))
       elif convertedScore is not None and int(round(convertedScore)) <= 2:
@@ -389,11 +443,12 @@ def registerUser(rival_id, user_name, update_contest=True):
       return True
 
     c = getHttpContents(playerInfoUrl.format(rival_id))
+    #print c
     if c is None:
       logging.error('registerUser error : site is not available')
       return False
     
-    user_name_site = c.find(id='pname').findAll('span')[-1]
+    user_name_site = c.find(id='pname').findAll('span')[-1].text
     if user_name_site != user_name:
       logging.error('registerUser error : name missmatched {0}, {1}'.format(user_name, user_name_site))
       return False
