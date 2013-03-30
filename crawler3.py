@@ -135,8 +135,8 @@ def parseScoreInfo(raw):
     s = raw.split(':')
     ret = {
         'id'    : s[0],
-        'score' : s[1][1:-1].replace(' ', '').split(','),
-        'fc'    : s[2][1:-1].replace(' ', '').split(',')
+        'score' : [ int(_) for _ in s[1][1:-1].replace(' ', '').split(',') ],
+        'fc'    : [ _ == 'True' for _ in s[2][1:-1].replace(' ', '').split(',')]
     }
     return ret
 
@@ -149,29 +149,31 @@ def calcConvertedScore(title, difficulty, score):
 # example: calcUpdatedScore(57710029539329, 'only my railgun', 'EXTREME', 999031) -> -969
 # Also updates the db if best score is changed
 def calcUpdatedScore(rival_id, title, difficulty, score):
-    if difficulty == 'BASIC': i = 0
-    elif difficulty == 'ADVANCED': i = 1
-    else: i = 2
+  if difficulty == 'BASIC': i = 0
+  elif difficulty == 'ADVANCED': i = 1
+  else: i = 2
 
-    r = getRedis()
-    
-    user_name = r.hget("rival_id", rival_id)
-    if not r.exists('score:%d'%rival_id):
-      return '?'
-    raw = r.hget('score:%d'%rival_id, title)
-    prev = parseScoreInfo(raw)
-    prev_score = prev['score'][i]
+  r = getRedis()
+  
+  user_name = r.hget("rival_id", rival_id)
+  if not r.exists('score:%d'%rival_id):
+    return '?'
+  raw = r.hget('score:%d'%rival_id, title)
+  if raw is None:
+    return '?'
+  prev = parseScoreInfo(raw)
+  prev_score = prev['score'][i]
 
-    result = score - int(prev_score)
-    if result > 0:
-        prev['score'][i] = score
-        r.hset('score:%d'%rival_id, title, '%(id)s:%(score)s:%(fc)s'%prev)
-        print user_name + ' updated score of [' + title + ']'
-        return '+' + str(result)
-    elif result < 0:
-        return '-' + str(0 - result)
-    else:
-        return '0'
+  result = score - prev_score
+  if result > 0:
+    prev['score'][i] = score
+    r.hset('score:%d'%rival_id, title, '%(id)s:%(score)s:%(fc)s'%prev)
+    logging.info(user_name + ' updated score of [' + title + ']')
+    return '+' + str(result)
+  elif result < 0:
+    return '-' + str(0 - result)
+  else:
+    return '0'
 
 def getHttpContents(url):
   try:
@@ -325,6 +327,7 @@ def getUserScore(rival_id):
     page_indice = c.find(attrs={"class":"pager"}).findAll(attrs={"class":"number"})
     for page_index in page_indice:
       idx = int(page_index.text)
+      page = None
       if idx == 1:
         page = c
       else:
@@ -335,8 +338,8 @@ def getUserScore(rival_id):
       pages.append(page)
 
     for page in pages:
-        oddrows = c.findAll(attrs={"class":"odd"})
-        evenrows = c.findAll(attrs={"class":"even"})
+        oddrows = page.findAll(attrs={"class":"odd"})
+        evenrows = page.findAll(attrs={"class":"even"})
         rows = oddrows + evenrows
         
         #scoredata : music, bsc_score, bsc_fc, adv_score, adv_fc, ext_score, ext_fc
@@ -356,7 +359,6 @@ def getUserScore(rival_id):
                     scoredata['score'].append(int(score.text))
                 scoredata['fc'].append(int(score.find('div')['class'][-1]) == 1)
             playScore.append(scoredata)
-            logging.debug(scoredata)
 
     score_key = 'score:%d'%rival_id
     map(lambda _: logging.info(user_name + '%(music)s + %(score)s + %(fc)s'%_), playScore)
@@ -503,7 +505,6 @@ def registerUser(rival_id, user_name, update_contest=True, update_score=True):
       return True
 
     c = getHttpContents(playerInfoUrl.format(rival_id))
-    #print c
     if c is None:
       logging.error('registerUser error : site is not available')
       return False
