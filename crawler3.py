@@ -304,6 +304,7 @@ def getUserScore(rival_id):
     print "Getting scores of " + str(rival_id)
 
     playScore = []
+    hashData = {}
     pages = c.find(attrs={"class":"pager"}).findAll(attrs={"class":"number"})
     for page in pages:
         i = int(page.text)
@@ -332,10 +333,11 @@ def getUserScore(rival_id):
                     scoredata['score'].append(int(score.text))
                 scoredata['fc'].append(int(score.find('div')['class'][-1]) == 1)
             playScore.append(scoredata)
+            hashData[scoredata['music']] = scoredata['music_id'] + ':' + str(scoredata['score']) + ':' + str(scoredata['fc'])
 
     score_key = 'score:%d'%rival_id
     map(lambda _: logging.info(user_name + '%(music)s + %(score)s + %(fc)s'%_), playScore)
-    map(lambda _: r.hset(score_key, '%(music)s'%_, '%(music_id)s:%(score)s:%(fc)s'%_), playScore)
+    r.hmset(score_key, hashData)
 
     r.lpush('IRC_HISTORY', u'\u0002[%s]님의 스코어가 업데이트 되었습니다.'%(user_name))
     
