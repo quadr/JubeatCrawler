@@ -164,7 +164,7 @@ def calcUpdatedScore(rival_id, title, difficulty, score):
     if result > 0:
         prev['score'][i] = score
         r.hset('score:%d'%rival_id, title, '%(id)s:%(score)s:%(fc)s'%prev)
-        print user_name + 'updated score of [' + title + ']'
+        print user_name + ' updated score of [' + title + ']'
         return '+' + str(result)
     elif result < 0:
         return '-' + str(0 - result)
@@ -301,7 +301,7 @@ def getUserScore(rival_id):
     user_name = r.hget('rival_id', rival_id)
 
     c = getHttpContents(playScoreUrl%(rival_id, 1))
-    print "Contents crawled"
+    print "Getting scores of " + str(rival_id)
 
     playScore = []
     pages = c.find(attrs={"class":"pager"}).findAll(attrs={"class":"number"})
@@ -344,7 +344,7 @@ def getUserScore(rival_id):
     return []
         
 def getUserHistory(rival_id):
-  #try:
+  try:
     r = getRedis()
     last_update = r.hget('last_update', rival_id)
     update_date = last_update
@@ -409,9 +409,9 @@ def getUserHistory(rival_id):
     map(lambda _: r.lpush('recent_history', '%(date)s\t%(music)s\t%(difficulty)s\t%(score)s\t%(place)s'%_+'\t'+user_name+'\t'+now()), playHistory) 
     return [ ((u'%(date)s:%(music)s:%(difficulty)s:%(score)s:{0}'.format(rival_id)%_).encode('utf-8'), (u'%(music)s:%(difficulty)s'%_).encode('utf-8'), int(_['score']), _['date'].encode('utf-8')) for _ in playHistory ]
 
-  #except Exception, e:
-   # logging.error('getUserHistory Error: %s(%d)'%(e, rival_id))
-    #return []
+  except Exception, e:
+    logging.error('getUserHistory Error: %s(%d)'%(e, rival_id))
+    return []
 
 def updateContestHistory():
   try:
@@ -462,7 +462,7 @@ def updateContestHistory():
     logging.error('updateContestHistory Error: %s'%e)
     return
 
-def registerUser(rival_id, user_name, update_contest=True):
+def registerUser(rival_id, user_name, update_contest=True, update_score=True):
   try:
     r = getRedis()
     user_name = user_name.upper()
@@ -489,6 +489,9 @@ def registerUser(rival_id, user_name, update_contest=True):
     
     if update_contest:
       updateContestInfo(int(rival_id))
+
+    if update_score:
+      getUserScore(int(rival_id))
 
     return True
 
