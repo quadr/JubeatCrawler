@@ -392,6 +392,8 @@ def getUserHistory(rival_id):
       rank = getRank(score)
       convertedScore = calcConvertedScore(row['music'], difficulty, score)
       updatedScore = calcUpdatedScore(rival_id, row['music'], difficulty, score)
+      if updatedScore[0] == '+':
+          updatedScore = IRCColor['yellow'] + updatedScore + RankColor[rank]
       if convertedScore is not None:
         convertedScore = convertedScore / 0.3
       if convertedScore is not None or convertedScore > 0:
