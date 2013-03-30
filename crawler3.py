@@ -156,6 +156,8 @@ def calcUpdatedScore(rival_id, title, difficulty, score):
     r = getRedis()
     
     user_name = r.hget("rival_id", rival_id)
+    if not r.exists('score:%d'%rival_id):
+      return '?'
     raw = r.hget('score:%d'%rival_id, title)
     prev = parseScoreInfo(raw)
     prev_score = prev['score'][i]
@@ -295,22 +297,44 @@ def updateContestData(contest_id):
     logging.error('getContestData Error: %s(%d)'%(e, contest_id))
     return set()
 
+def getMusicScorePage(url):
+  for i in xrange(10):
+    c = getHttpContents(url)
+    if c is not None and c.find(id='play_music_table'):
+      return c
+    music_data = c.find(id='music_data')
+    if music_data and u'公開' in music_data.text:
+      return None
+    gevent.sleep(4)
+  return None
+  
+
 def getUserScore(rival_id):
   try:
     r = getRedis()
     user_name = r.hget('rival_id', rival_id)
 
-    c = getHttpContents(playScoreUrl%(rival_id, 1))
-    print "Getting scores of " + str(rival_id)
+    logging.info("Getting scores of %s(%d)"%(user_name, rival_id))
+    c = getMusicScorePage(playScoreUrl%(rival_id, 1))
+    if c is None:
+      logging.error("getUserScore Error: site is not availabe.")
+      return []
 
     playScore = []
-    pages = c.find(attrs={"class":"pager"}).findAll(attrs={"class":"number"})
-    for page in pages:
-        i = int(page.text)
-        c = getHttpContents(playScoreUrl%(rival_id, i))
-        if c is None:
-            return []
+    pages = []
+    page_indice = c.find(attrs={"class":"pager"}).findAll(attrs={"class":"number"})
+    for page_index in page_indice:
+      idx = int(page_index.text)
+      if idx == 1:
+        page = c
+      else:
+        page = getMusicScorePage(playScoreUrl%(rival_id, idx))
+      if page is None:
+        logging.error("getUserScore Error: site is not availabe.")
+        return []
+      pages.append(page)
 
+    for page in pages:
         oddrows = c.findAll(attrs={"class":"odd"})
         evenrows = c.findAll(attrs={"class":"even"})
         rows = oddrows + evenrows
@@ -332,6 +356,7 @@ def getUserScore(rival_id):
                     scoredata['score'].append(int(score.text))
                 scoredata['fc'].append(int(score.find('div')['class'][-1]) == 1)
             playScore.append(scoredata)
+            logging.debug(scoredata)
 
     score_key = 'score:%d'%rival_id
     map(lambda _: logging.info(user_name + '%(music)s + %(score)s + %(fc)s'%_), playScore)
@@ -426,6 +451,7 @@ def updateContestHistory():
     contest_members = dict(zip(current_contest_list, [ job.value for job in jobs ]))
 
     member_list = r.hgetall('rival_id')
+    [ getUserScore(int(rival_id)) for rival_id in member_list.iterkeys() if not r.exists(('score:%s'%rival_id)) ]
     jobs = [ gevent.spawn(getUserHistory, int(rival_id)) for rival_id, user in member_list.iteritems() ]
     gevent.joinall(jobs)
     
