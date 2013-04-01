@@ -193,7 +193,7 @@ def getHttpContents(url):
     if 'err' in res['content-location'] or 'REDIRECT' in res['content-location']:
       logging.error('getHttpContents : %s'%url)
       return None
-    return BeautifulSoup(c)
+    return BeautifulSoup(c.decode('shift_jisx0213'))
   except Exception, e:
     logging.error('getHttpContents : %s %s'%(url, e))
   
