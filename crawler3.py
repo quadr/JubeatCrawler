@@ -370,7 +370,7 @@ def getUserScore(rival_id):
 
     score_key = 'score:%d'%rival_id
     map(lambda _: logging.info(user_name + '%(music)s + %(score)s + %(fc)s'%_), playScore)
-    raw = r.hget('score:%d'%rival_id, title)
+    r.hmset(score_key, hashData)
 
     r.lpush('IRC_HISTORY', u'\u0002[%s]님의 스코어가 업데이트 되었습니다.'%(user_name))
     
