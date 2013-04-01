@@ -160,9 +160,15 @@ def calcUpdatedScore(rival_id, title, difficulty, score):
     return '?'
   raw = r.hget('score:%d'%rival_id, title)
   if raw is None:
-    return '?'
+    getUserScore(rival_id)
+    raw = r.hget('score:%d'%rival_id, title)
+    if raw is None:
+      return '?'
+
   prev = parseScoreInfo(raw)
   prev_score = prev['score'][i]
+  if score == 1000000:
+    prev['fc'][i] = True
 
   result = score - prev_score
   if result > 0:
@@ -323,6 +329,7 @@ def getUserScore(rival_id):
       return []
 
     playScore = []
+    hashData = {}
     pages = []
     page_indice = c.find(attrs={"class":"pager"}).findAll(attrs={"class":"number"})
     for page_index in page_indice:
@@ -359,10 +366,11 @@ def getUserScore(rival_id):
                     scoredata['score'].append(int(score.text))
                 scoredata['fc'].append(int(score.find('div')['class'][-1]) == 1)
             playScore.append(scoredata)
+            hashData[scoredata['music']] = scoredata['music_id'] + ':' + str(scoredata['score']) + ':' + str(scoredata['fc'])
 
     score_key = 'score:%d'%rival_id
     map(lambda _: logging.info(user_name + '%(music)s + %(score)s + %(fc)s'%_), playScore)
-    map(lambda _: r.hset(score_key, '%(music)s'%_, '%(music_id)s:%(score)s:%(fc)s'%_), playScore)
+    raw = r.hget('score:%d'%rival_id, title)
 
     r.lpush('IRC_HISTORY', u'\u0002[%s]님의 스코어가 업데이트 되었습니다.'%(user_name))
     
