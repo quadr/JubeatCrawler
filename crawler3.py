@@ -351,6 +351,7 @@ def getUserScore(rival_id):
       logging.error("getUserScore Error: site is not availabe.")
       return []
 
+
     playScore = []
     hashData = {}
     pages = []
@@ -366,6 +367,7 @@ def getUserScore(rival_id):
         logging.error("getUserScore Error: site is not availabe.")
         return []
       pages.append(page)
+
 
     for page in pages:
         oddrows = page.findAll(attrs={"class":"odd"})
