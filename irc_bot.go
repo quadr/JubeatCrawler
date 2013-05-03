@@ -3,16 +3,16 @@ package main
 import (
 	"crypto/tls"
 	"fmt"
-	irc "github.com/quadr/goirc/client"
 	redis "github.com/garyburd/redigo/redis"
+	irc "github.com/quadr/goirc/client"
 	"io/ioutil"
 	"log"
+	"math"
 	"math/rand"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
-	"sort"
-	"math"
 )
 
 var msg = make(chan string, 256)
@@ -92,6 +92,7 @@ func readLog() {
 	c, err := redis.Dial("tcp", ":6379")
 	if err != nil {
 		log.Println("Redis Connect Error : ", err)
+		return
 	}
 	defer c.Close()
 	c.Do("SELECT", 11)
@@ -104,7 +105,21 @@ func readLog() {
 	}
 }
 
-func selectMusic(conn *irc.Conn, lv... int) {
+func addSachalUser(handle, rivalId string) error {
+	c, err := redis.Dial("tcp", ":6379")
+	if err != nil {
+		log.Println("Redis Connect Error : ", err)
+		return err
+	}
+	defer c.Close()
+	c.Do("SELECT", 11)
+	if _, err := c.Do("HSET", "rival_id", rivalId, handle); err != nil {
+		return err
+	}
+	return nil
+}
+
+func selectMusic(conn *irc.Conn, lv ...int) {
 	var info *MusicInfo
 	var musiclist []*MusicInfo
 	if len(lv) == 1 {
@@ -116,7 +131,7 @@ func selectMusic(conn *irc.Conn, lv... int) {
 		}
 	} else if len(lv) == 2 {
 		lv[0], lv[1] = adjustLevel(lv[0]), adjustLevel(lv[1])
-		for i := lv[0]; i <= lv[1] ; i++ {
+		for i := lv[0]; i <= lv[1]; i++ {
 			musiclist = append(musiclist, musicinfos.lvSongs[i]...)
 		}
 	}
@@ -177,6 +192,16 @@ func main() {
 					}
 					sort.Ints(lv)
 					selectMusic(conn, lv...)
+				case "사찰":
+					if len(cmds) == 3 {
+						if err := addSachalUser(cmds[1], cmds[2]); err != nil {
+							conn.Privmsg("#jubeater", err.Error())
+						} else {
+							conn.Privmsg("#jubeater", "사찰 등록 완료")
+						}
+					} else {
+						conn.Privmsg("#jubeater", "!사찰 [Handle] [Rival ID]")
+					}
 				default:
 					conn.Privmsg("#jubeater", "잘못된 명령입니다.")
 				}
@@ -195,6 +220,6 @@ func main() {
 		} else {
 			<-disconnected
 		}
-		time.Sleep(10*time.Second)
+		time.Sleep(10 * time.Second)
 	}
 }

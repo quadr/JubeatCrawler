@@ -133,7 +133,7 @@ def initMusicTable(rival_id):
     r = getRedis() 
     scores = r.hgetall('score:%s'%rival_id)
     ret = r.hmset('music_id', dict((k, int(v.split(':')[0])) for k,v in scores.iteritems()))
-    print 'music_id synced'
+    logging.info('Init Music Table Finished')
     return ret
 
 def syncMusicID(rival_id):
@@ -144,7 +144,7 @@ def syncMusicID(rival_id):
         return {}
     else:
         ret = r.hmset('score:%s'%rival_id, dict((k, str(r.hget('music_id', k)) + ':' + v.split(':', 1)[1]) for k,v in scores.iteritems()))
-        print 'fin'
+        logging.info('Sync Music Id Finished')
         return ret
 
 # example of raw : "5733600:[996029, 994097, 958275]:[True, True, False]"
@@ -348,7 +348,7 @@ def getUserScore(rival_id):
     logging.info("Getting scores of %s(%d)"%(user_name, rival_id))
     c = getMusicScorePage(playScoreUrl%(rival_id, 1))
     if c is None:
-      logging.error("getUserScore Error: site is not availabe.")
+      logging.error("getUserScore Error: site is not availabe. (1)")
       return []
 
 
@@ -364,7 +364,7 @@ def getUserScore(rival_id):
       else:
         page = getMusicScorePage(playScoreUrl%(rival_id, idx))
       if page is None:
-        logging.error("getUserScore Error: site is not availabe.")
+        logging.error("getUserScore Error: site is not availabe.({0})".format(idx))
         return []
       pages.append(page)
 
@@ -458,7 +458,9 @@ def getUserHistory(rival_id):
       convertedScore = calcConvertedScore(row['music'], difficulty, score)
       updatedScore = calcUpdatedScore(rival_id, row['music'], difficulty, score)
       if updatedScore[0] == '+':
-          updatedScore = IRCColor['yellow'] + u',01' + updatedScore + RankColor[rank]
+          updatedScore = IRCColor['light_red'] + updatedScore + RankColor[rank]
+      elif updatedScore[0] == '-':
+          updatedScore = IRCColor['dark_blue'] + updatedScore + RankColor[rank]
       if convertedScore is not None:
         convertedScore = convertedScore / 0.3
       if convertedScore is not None or convertedScore > 0:
