@@ -11,6 +11,7 @@ import collections
 from gevent import monkey
 from datetime import datetime, timedelta
 from BeautifulSoup import BeautifulSoup
+import sys, traceback
 
 monkey.patch_all(thread=False)
 
@@ -394,12 +395,13 @@ def getUserScore(rival_id):
             hashData[scoredata['music']] = scoredata['music_id'] + ':' + str(scoredata['score']) + ':' + str(scoredata['fc'])
 
     score_key = 'score:%d'%rival_id
-    map(lambda _: logging.info(user_name + '%(music)s + %(score)s + %(fc)s'%_), playScore)
+    map(lambda _: logging.info(user_name.decode('utf-8') + u'%(music)s + %(score)s + %(fc)s'%_), playScore)
     r.hmset(score_key, hashData)
 
-    r.lpush('IRC_HISTORY', u'\u0002[%s]님의 스코어가 업데이트 되었습니다.'%(user_name))
+    r.lpush('IRC_HISTORY', u'\u0002[%s]님의 스코어가 업데이트 되었습니다.'%(user_name.decode('utf-8')))
     
   except Exception, e:
+    traceback.print_exc(file=sys.stdout)
     logging.error('getUserScore Error: %s(%d)'%(e, rival_id))
     return []
 
