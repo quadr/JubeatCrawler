@@ -178,7 +178,7 @@ def calcUpdatedScore(rival_id, title, difficulty, score):
 
     r = getRedis()
 
-    user_name = r.hget("rival_id", rival_id)
+    user_name = r.hget("rival_id", rival_id).decode('utf-8')
     if not r.exists('score:%d'%rival_id):
         return '?'
     raw = r.hget('score:%d'%rival_id, title)
@@ -344,7 +344,7 @@ def getMusicScorePage(url):
 def getUserScore(rival_id):
   try:
     r = getRedis()
-    user_name = r.hget('rival_id', rival_id)
+    user_name = r.hget('rival_id', rival_id).decode('utf-8')
 
     logging.info("Getting scores of %s(%d)"%(user_name, rival_id))
     c = getMusicScorePage(playScoreUrl%(rival_id, 1))
@@ -395,10 +395,10 @@ def getUserScore(rival_id):
             hashData[scoredata['music']] = scoredata['music_id'] + ':' + str(scoredata['score']) + ':' + str(scoredata['fc'])
 
     score_key = 'score:%d'%rival_id
-    map(lambda _: logging.info(user_name.decode('utf-8') + u'%(music)s + %(score)s + %(fc)s'%_), playScore)
+    map(lambda _: logging.info(user_name + u'%(music)s + %(score)s + %(fc)s'%_), playScore)
     r.hmset(score_key, hashData)
 
-    r.lpush('IRC_HISTORY', u'\u0002[%s]님의 스코어가 업데이트 되었습니다.'%(user_name.decode('utf-8')))
+    r.lpush('IRC_HISTORY', u'\u0002[%s]님의 스코어가 업데이트 되었습니다.'%(user_name))
     
   except Exception, e:
     traceback.print_exc(file=sys.stdout)
@@ -410,7 +410,7 @@ def getUserHistory(rival_id):
     r = getRedis()
     last_update = r.hget('last_update', rival_id)
     update_date = last_update
-    user_name = r.hget('rival_id', rival_id)
+    user_name = r.hget('rival_id', rival_id).decode('utf-8')
 
     playHistory = []
     up_to_date = False
