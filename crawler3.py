@@ -233,18 +233,18 @@ def login(kid=None, password=None):
   if kid is not None and password is not None:
     r.hmset('auth_info', {'KID':kid, 'pass':password})
   
+#  loginUrl = 'https://p.eagate.573.jp/gate/p/login.html'
+#  res, c = http.request(loginUrl)
   loginUrl = 'https://p.eagate.573.jp/gate/p/login.html'
-  res, c = http.request(loginUrl)
-  cookie = Cookie.SimpleCookie(res['set-cookie']).values()[0].OutputString(attrs=[])
-  expires = Cookie.SimpleCookie(res['set-cookie']).values()[0]['expires']
-  loginUrl = 'https://p.eagate.573.jp/gate/p/login.html'
-  loginHeader = { 'content-type' : 'application/x-www-form-urlencoded', 'cookie': cookie, 'Origin': 'https://p.eagate.573.jp', 'Referer': 'https://p.eagate.573.jp/gate/p/login.html' }
+  loginHeader = { 'content-type' : 'application/x-www-form-urlencoded', 'Origin': 'https://p.eagate.573.jp', 'Referer': 'https://p.eagate.573.jp/gate/p/login.html', 'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.72 Safari/537.36'  }
   auth_info = r.hgetall('auth_info')
   auth_info['OTP'] = ''
   params = urllib.urlencode(auth_info)
   res, c = http.request(loginUrl, 'POST', params, headers=loginHeader)
   if res.status == 302 :
     logging.info('login success')
+    cookie = Cookie.SimpleCookie(res['set-cookie']).values()[0].OutputString(attrs=[])
+    expires = Cookie.SimpleCookie(res['set-cookie']).values()[0]['expires']
     expire_date = datetime.strptime(expires, '%a, %d-%b-%Y %H:%M:%S %Z') + timedelta(hours=9)
     r.set('cookie', cookie)
     r.expireat('cookie', int(time.mktime(expire_date.timetuple())))
