@@ -87,13 +87,15 @@ RankColor = {
 LvColor = {
   "BASIC" : IRCColor['dark_green'],
   "ADVANCED" : IRCColor['orange'],
-  "EXTREME" : IRCColor['dark_red']
+  "EXTREME" : IRCColor['dark_red'],
+  "EDIT" : IRCColor['light_blue']
 }
 
 DifficultyShortString = {
   "BASIC" : "BSC",
   "ADVANCED" : "ADV",
-  "EXTREME" : "EXT"
+  "EXTREME" : "EXT",
+  "EDIT" : "EDIT"
 }
 
 def getRank(score):
@@ -103,7 +105,7 @@ def getRank(score):
 
 MusicInfo = collections.namedtuple('MusicInfo', ['title', 'artist', 'difficulty', 'bpm', 'lv', 'notes'])
 
-DifficultyString = ["BASIC", "ADVANCED", "EXTREME"]
+DifficultyString = ["BASIC", "ADVANCED", "EXTREME", "EDIT"]
 
 def parseMusicInfo(raw):
   s = raw.split("\t")
@@ -457,8 +459,10 @@ def getUserHistory(rival_id):
       score = int(row["score"])
       difficulty = row["difficulty"]
       rank = getRank(score)
-      convertedScore = calcConvertedScore(row['music'], difficulty, score)
-      updatedScore = calcUpdatedScore(rival_id, row['music'], difficulty, score)
+      updatedScore = '0'
+      if difficulty != "EDIT":
+        convertedScore = calcConvertedScore(row['music'], difficulty, score)
+        updatedScore = calcUpdatedScore(rival_id, row['music'], difficulty, score)
       if updatedScore[0] == '+':
           updatedScore = IRCColor['light_red'] + updatedScore + RankColor[rank]
       elif updatedScore[0] == '-':
