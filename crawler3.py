@@ -219,7 +219,11 @@ def getHttpContents(url):
     if 'err' in res['content-location'] or 'REDIRECT' in res['content-location']:
       logging.error('getHttpContents : %s'%url)
       return None
-    return BeautifulSoup(c.decode('shift_jisx0213'))
+    s = BeautifulSoup(c.decode('shift_jisx0213'))
+    if s.find('a', attrs={'class': 'login'}) is not None:
+      r.delete('cookie')
+      login()
+    return s
   except Exception, e:
     logging.error('getHttpContents : %s %s'%(url, e))
   
@@ -460,6 +464,7 @@ def getUserHistory(rival_id):
       difficulty = row["difficulty"]
       rank = getRank(score)
       updatedScore = '0'
+      convertedScore = None
       if difficulty != "EDIT":
         convertedScore = calcConvertedScore(row['music'], difficulty, score)
         updatedScore = calcUpdatedScore(rival_id, row['music'], difficulty, score)
@@ -485,6 +490,7 @@ def getUserHistory(rival_id):
     return [ ((u'%(date)s:%(music)s:%(difficulty)s:%(score)s:{0}'.format(rival_id)%_).encode('utf-8'), (u'%(music)s:%(difficulty)s'%_).encode('utf-8'), int(_['score']), _['date'].encode('utf-8')) for _ in playHistory ]
 
   except Exception, e:
+    traceback.print_exc(file=sys.stdout)
     logging.error('getUserHistory Error: %s(%d)'%(e, rival_id))
     return []
 
