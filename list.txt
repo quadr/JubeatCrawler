@@ -49,7 +49,7 @@ Cassis	肥塚良彦	176	3	6	8	210	497	660
 CAT'S EYE	杏里	145	3	6	7	177	337	426
 Chance and Dice	日本少年	150	5	6	8	319	356	443
 chaplet	DJ TOTTO	200	5	9	10	277	678	772
-Che Che Chelip～魔法のコトバ～	Chelip	125-130	3	6	8	178	332	486
+Che Che Chelip〜魔法のコトバ〜	Chelip	125-130	3	6	8	178	332	486
 CHEAT DANCER - short ver -	X.I.P.	120	2	5	8	147	343	521
 Chronos	TAG	128	4	9	10	312	583	820
 Cleopatrysm	ピラミッ℃	190	5	8	10	375	570	860
@@ -196,7 +196,7 @@ MAMORE!!!	アイドリング!!!	162	3	6	8	189	456	556
 maximum the hormone	マキシマム ザ ホルモン	143-197	4	7	9	335	675	808
 Metric	Hommarju	123	3	7	9	238	425	861
 METROPOLIS	→Pia-no-jaC←	140-160	3	7	10	303	502	895
-Milchstraße	Buluka & Nilo	189	3	5	9	240	374	694
+Milchstraβe	Buluka & Nilo	189	3	5	9	240	374	694
 milky ice bear	S-C-U	147	4	6	8	261	553	717
 Mirage	Mutsuhiko Izumi	170	4	7	10	263	442	770
 MirrorDance	androp	135	2	6	8	185	412	531
@@ -384,7 +384,7 @@ ZZ	D.J.Amuro	154	5	8	10	387	715	956
 この子の七つのお祝いに	あさき	161	5	8	9	214	454	671
 この青空の下で	TAG meets "eimy"	165	5	8	9	296	542	814
 ごめんなさいのKissing You	E-Girls	143	2	5	7	153	313	500
-ザッツ！KAIYODO	はちきんガールズ	149	3	7	8	163	324	458
+ザッツ!KAIYODO	はちきんガールズ	149	3	7	8	163	324	458
 サブリナ	家入レオ	136	3	5	8	193	345	540
 サヨナラ・ヘヴン	猫叉Master	111	3	6	9	193	466	686
 さよならトリップ	Dormir	133	3	7	9	223	528	654
