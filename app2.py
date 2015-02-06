@@ -3,6 +3,7 @@ from datetime import datetime, tzinfo, timedelta
 import redis
 import sys
 import PyRSS2Gen
+import base64, json
 from functools import wraps
 from gevent import monkey
 
@@ -159,6 +160,61 @@ def rss():
     print sys.exc_info()[0], err
     return jsonify(code='error')
 
+@app.route('/admin/music_list', methods=['GET', 'POST'])
+@jsonp
+def adminMusicList():
+  if request.method == 'POST':
+    try:
+      info_data = base64.b64decode(request.json['data']).decode('utf-8')
+      newInfo = {}
+      for line in info_data.splitlines():
+        s = line.split('\t')
+        newInfo[s[0].encode('utf-8')] = json.dumps({
+            'title': s[0],
+            'artist': s[1],
+            'bpm': s[2],
+            'lv': [ int(_) for _ in s[3:6] ],
+            'notes': [ int(_) for _ in s[6:9] ]
+        })
+      r = getRedis()
+      r.hmset('music_info', newInfo)
+      return jsonify(code='ok')
+    except Exception, err:
+      print sys.exc_info()[0], err
+      return jsonify(code='error')
+  else:
+    try:
+      r = getRedis()
+      raw_data = r.hgetall('music_info')
+      return jsonify(music_info=[ json.loads(_.decode('utf-8')) for _ in raw_data.itervalues() ])
+    except Exception, err:
+      print sys.exc_info()[0], err
+      return jsonify(code='error')
+
+@app.route('/admin/music_list/update', methods=['POST'])
+@jsonp
+def updateMusicInfo():
+  try:
+    key, info = request.json["key"], request.json["info"]
+    r = getRedis()
+    print r.hdel('music_info', key.encode('utf-8'))
+    r.hset('music_info', info['title'].encode('utf-8'), json.dumps(info))
+    return jsonify(code='ok')
+  except Exception, err:
+    print sys.exc_info()[0], err
+    return jsonify(code='error')
+
+@app.route('/admin/music_list/delete', methods=['POST'])
+@jsonp
+def deleteMusicInfo():
+  try:
+    info = request.json
+    r = getRedis()
+    res = r.hdel('music_info', info['title'].encode('utf-8'))
+    return jsonify(code='ok', status=res)
+  except Exception, err:
+    print sys.exc_info()[0], err
+    return jsonify(code='error')
 
 if __name__ == '__main__':
-  app.run(host='0.0.0.0', port=4416)
+  app.run(host='0.0.0.0', port=4416, debug=True)

@@ -12,6 +12,7 @@ from gevent import monkey
 from datetime import datetime, timedelta
 from BeautifulSoup import BeautifulSoup
 import sys, traceback
+import json
 
 monkey.patch_all(thread=False)
 
@@ -132,6 +133,16 @@ def makeMusicInfoList():
 MusicInfoList = makeMusicInfoList()
 MusicNoteDict = dict(map(lambda m: ((m.title,m.difficulty), m.notes), MusicInfoList))
 
+def getNoteInfo(title, difficulty):
+  try:
+    r = getRedis()
+    info = json.loads(r.hget('music_info', title.encode('utf-8')))
+    idx = DifficultyString.index(difficulty)
+    return int(info["notes"][idx])
+  except:
+    return None
+
+
 def initMusicTable(rival_id):
     r = getRedis() 
     scores = r.hgetall('score:%s'%rival_id)
@@ -162,9 +173,9 @@ def parseScoreInfo(raw):
 
 # example: calcConvertedScore('only my railgun', 'EXTREME', 999031) -> 0.600
 def calcConvertedScore(title, difficulty, score):
-  key = (title,difficulty)
-  if key in MusicNoteDict:
-    return (1000000 - score) * MusicNoteDict[key] / 900000.0
+  notes = getNoteInfo(title, difficulty)
+  if notes is not None:
+    return (1000000 - score) * notes / 900000.0
 
 def newScore(title):
     r = getRedis()

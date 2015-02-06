@@ -1,0 +1,48 @@
+<!doctype html>
+<html ng-app="MusicInfoAdmin">
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<script type="text/javascript" src="bower_components/angular/angular.min.js"></script>
+		<script type="text/javascript" src="app.js"></script>
+		<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+		<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap-theme.min.css">
+		<style>
+			* {
+	      		font-family:'Segoe UI', 'Meiryo', 'sans-serif';
+		    }
+
+		</style>
+	</head>
+	<body>
+		<div ng-controller="MusicList" class="container-fluid">
+			<!-- filter-->
+			<div class="row"></div>
+			<!-- header -->
+			<div class="row">
+				<div class="col-md-2 text-center">Title</div>
+				<div class="col-md-2 text-center">Artist</div>
+				<div class="col-md-1 text-center">BPM</div>
+				<div class="col-md-1 text-center">LV(EASY)</div>
+				<div class="col-md-1 text-center">LV(ADV)</div>
+				<div class="col-md-1 text-center">LV(EXT)</div>
+				<div class="col-md-1 text-center">NOTES(EASY)</div>
+				<div class="col-md-1 text-center">NOTES(ADV)</div>
+				<div class="col-md-1 text-center">NOTES(EXT)</div>
+				<div class="col-md-1">&nbsp;</div>
+			</div>
+			<!-- row -->
+			<div ng-repeat="music in music_list | orderBy: 'title'" ng-init="key = music.title" class="row form-group form-group-sm">
+				<div class="col-md-2"><input class="form-control" type="text" ng-model="music.title" /></div>
+				<div class="col-md-2"><input class="form-control" type="text" ng-model="music.artist" /></div>
+				<div class="col-md-1"><input class="form-control" type="text" ng-model="music.bpm" /></div>
+				<div class="col-md-1"><input class="form-control" type="text" ng-model="music.lv[0]" /></div>
+				<div class="col-md-1"><input class="form-control" type="text" ng-model="music.lv[1]" /></div>
+				<div class="col-md-1"><input class="form-control" type="text" ng-model="music.lv[2]" /></div>
+				<div class="col-md-1"><input class="form-control" type="text" ng-model="music.notes[0]" /></div>
+				<div class="col-md-1"><input class="form-control" type="text" ng-model="music.notes[1]" /></div>
+				<div class="col-md-1"><input class="form-control" type="text" ng-model="music.notes[2]" /></div>
+				<div class="col-md-1"><button class="btn btn-sm" ng-click="update(key, music);" >Edit</button></div>
+			</div>
+		</div>
+	</body>
+</html>
