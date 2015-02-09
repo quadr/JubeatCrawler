@@ -39,6 +39,7 @@ def unescape(html):
   html = html.replace(u'&quot;', u'"')
   html = html.replace(u'&nbsp;', u' ')
   html = html.replace(u'&amp;', u'&')
+  html = html.replace(u'&eacute;', u'é')
   return html
 
 RankBase = [
