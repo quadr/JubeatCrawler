@@ -12,7 +12,7 @@ from gevent import monkey
 from datetime import datetime, timedelta
 from BeautifulSoup import BeautifulSoup
 import sys, traceback
-import json
+import json, HTMLParser
 
 monkey.patch_all(thread=False)
 
@@ -33,14 +33,8 @@ def dateToTime(date):
   return int(time.mktime(datetime.strptime(date, '%Y/%m/%d %H:%M:%S').timetuple()))
 
 def unescape(html):
-  html = html.replace(u'&lt;', u'<')
-  html = html.replace(u'&gt;', u'>')
-  html = html.replace(u'&apos;', u"'")
-  html = html.replace(u'&quot;', u'"')
-  html = html.replace(u'&nbsp;', u' ')
-  html = html.replace(u'&amp;', u'&')
-  html = html.replace(u'&eacute;', u'é')
-  return html
+  h = HTMLParser.HTMLParser()
+  return h.unescape(html)
 
 RankBase = [
   (500000, "E"),
