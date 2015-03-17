@@ -11,7 +11,7 @@ monkey.patch_all()
 
 app = Flask(__name__)
 def getRedis():
-  return redis.Redis(db=11)
+  return redis.Redis(db=10)
 
 def strToUTC(s):
   return datetime.strptime(s, '%Y/%m/%d %H:%M:%S')-timedelta(hours=9)

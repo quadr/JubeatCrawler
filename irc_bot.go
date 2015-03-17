@@ -95,7 +95,7 @@ func readLog() {
 		return
 	}
 	defer c.Close()
-	c.Do("SELECT", 11)
+	c.Do("SELECT", 10)
 	for {
 		result, _ := redis.MultiBulk(c.Do("BRPOP", "IRC_HISTORY", 0))
 
@@ -112,7 +112,7 @@ func addSachalUser(handle, rivalId string) error {
 		return err
 	}
 	defer c.Close()
-	c.Do("SELECT", 11)
+	c.Do("SELECT", 10)
 	if _, err := c.Do("HSET", "rival_id", rivalId, handle); err != nil {
 		return err
 	}

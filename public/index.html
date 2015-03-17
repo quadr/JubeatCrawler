@@ -2,21 +2,37 @@
 <html ng-app="MusicInfoAdmin">
 	<head>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
 		<script type="text/javascript" src="bower_components/angular/angular.min.js"></script>
-		<script type="text/javascript" src="app.js"></script>
+		<script type="text/javascript" src="bower_components/bootstrap-fileinput/js/fileinput.min.js"></script>
 		<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
 		<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap-theme.min.css">
+		<link href="bower_components/bootstrap-fileinput/css/fileinput.min.css" media="all" rel="stylesheet" type="text/css" />
 		<style>
 			* {
 	      		font-family:'Segoe UI', 'Meiryo', 'sans-serif';
 		    }
-
+			.padding-zero {
+				padding: 0 0 0 0;
+			}
 		</style>
 	</head>
 	<body>
 		<div ng-controller="MusicList" class="container-fluid">
-			<!-- filter-->
+			<!-- filter -->
 			<div class="row"></div>
+			<!-- full upload -->
+			<div class="row">
+				<div class="col-md-10 padding-zero">
+					<input id="rawdata" type="file" class="file" data-show-preview="false" onchange="angular.element(this).scope().fileSelected()"/>
+				</div>
+				<div class="col-md-1 padding-zero">
+					<button class="btn" ng-click="upload()" ng-disabled="disableUpload">Upload</button>
+				</div>
+				<div class="col-md-1 padding-zero">
+					<button class="btn" ng-click="">Export</button>
+				</div>
+			</div>
 			<!-- header -->
 			<div class="row">
 				<div class="col-md-2 text-center">Title</div>
@@ -44,5 +60,6 @@
 				<div class="col-md-1"><button class="btn btn-sm" ng-click="update(key, music);" >Edit</button></div>
 			</div>
 		</div>
+		<script type="text/javascript" src="app.js"></script>
 	</body>
 </html>
