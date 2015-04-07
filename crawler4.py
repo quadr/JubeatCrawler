@@ -530,7 +530,8 @@ def getUserHistory(rival_id):
           rivalScore = getUserMusicScore(int(rival_info), row['music_id'], difficulty)
           diffScore = score - rivalScore
           if int(updatedScore) >= diffScore:
-            updatedScore = updatedScore + IRCColor['magenta'] + '[' + diffScore + ']'
+            diffScore = '%+d'%(diffScore,)
+            updatedScore = updatedScore + IRCColor['light_magenta'] + '[' + diffScore + ']'
         updatedScore = IRCColor['light_red'] + updatedScore + RankColor[rank]
       elif updatedScore[0] == '-':
           updatedScore = IRCColor['dark_blue'] + updatedScore + RankColor[rank]
