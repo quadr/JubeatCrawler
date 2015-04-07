@@ -158,10 +158,11 @@ def syncMusicID(rival_id):
         return ret
 
 # example of raw : "5733600:[996029, 994097, 958275]:[True, True, False]"
+# example of raw(new) : "MUSIC TITLE:[996029, 994097, 958275]:[True, True, False]"
 def parseScoreInfo(raw):
-    s = raw.split(':')
+    s = raw.rsplit(':',2)
     ret = {
-        'id'    : s[0],
+        'title' : s[0].decode('utf-8'),
         'score' : [ int(_) for _ in s[1][1:-1].replace(' ', '').split(',') ],
         'fc'    : [ _ == 'True' for _ in s[2][1:-1].replace(' ', '').split(',')]
     }
@@ -173,14 +174,26 @@ def calcConvertedScore(title, difficulty, score):
   if notes is not None:
     return (1000000 - score) * notes / 900000.0
 
-def newScore(title):
+def newScore(music_id):
     r = getRedis()
-    music_id = r.hget('music_id', title)
-    return str(music_id) + ':' + str([0, 0, 0]) + ':' + str([False, False, False])
+    title = r.hget('music_id', music_id).decode('utf-8')
+    return title + ':' + str([0, 0, 0]) + ':' + str([False, False, False])
+
+def getUserMusicScore(rival_id, music_id, difficulty):
+  if difficulty == 'BASIC': i = 0
+  elif difficulty == 'ADVANCED': i = 1
+  else: i = 2
+
+  r = getRedis()
+  raw = r.hget('score:%d'%rival_id, music_id)
+  if raw is None:
+    return 0
+
+  return parseScoreInfo(raw)['score'][i]
 
 # example: calcUpdatedScore(57710029539329, 'only my railgun', 'EXTREME', 999031) -> -969
 # Also updates the db if best score is changed
-def calcUpdatedScore(rival_id, title, difficulty, score):
+def calcUpdatedScore(rival_id, music_id, difficulty, score):
     if difficulty == 'BASIC': i = 0
     elif difficulty == 'ADVANCED': i = 1
     else: i = 2
@@ -190,11 +203,11 @@ def calcUpdatedScore(rival_id, title, difficulty, score):
     user_name = r.hget("rival_id", rival_id).decode('utf-8')
     if not r.exists('score:%d'%rival_id):
         return '?'
-    raw = r.hget('score:%d'%rival_id, title)
+    raw = r.hget('score:%d'%rival_id, music_id)
     if raw is None:
         # if there is no score data, then make a new one
-        r.hset('score:%d'%rival_id, title, newScore(title))
-        raw = r.hget('score:%d'%rival_id, title)
+        r.hset('score:%d'%rival_id, music_id, newScore(music_id))
+        raw = r.hget('score:%d'%rival_id, music_id)
         if raw is None:
             return '?'
 
@@ -206,8 +219,8 @@ def calcUpdatedScore(rival_id, title, difficulty, score):
     result = score - prev_score
     if result > 0:
         prev['score'][i] = score
-        r.hset('score:%d'%rival_id, title, '%(id)s:%(score)s:%(fc)s'%prev)
-        logging.info(user_name + ' updated score of [' + title + ']')
+        r.hset('score:%d'%rival_id, music_id, '%(title)s:%(score)s:%(fc)s'%prev)
+        logging.info(user_name + ' updated score of [' + prev['title'] + ']')
         return '+' + str(result)
     elif result < 0:
         return '-' + str(0 - result)
@@ -405,7 +418,7 @@ def getUserScore(rival_id):
                     scoredata['score'].append(int(score.text))
                 scoredata['fc'].append(int(score.find('div')['class'][-1]) == 1)
             playScore.append(scoredata)
-            hashData[scoredata['music']] = scoredata['music_id'] + ':' + str(scoredata['score']) + ':' + str(scoredata['fc'])
+            hashData[scoredata['music_id']] = scoredata['music'] + ':' + str(scoredata['score']) + ':' + str(scoredata['fc'])
 
     score_key = 'score:%d'%rival_id
     map(lambda _: logging.info(user_name + u'%(music)s + %(score)s + %(fc)s'%_), playScore)
@@ -450,6 +463,10 @@ def getUserHistory(rival_id):
     update_date = last_update
     user_name = r.hget('rival_id', rival_id).decode('utf-8')
 
+    rival_info = r.hget('rival_info', rival_id)
+    if rival_info is not None:
+      rival_name = r.hget('rival_id', rival_info).decode('utf-8')
+
     playHistory = []
     up_to_date = False
     """
@@ -480,16 +497,16 @@ def getUserHistory(rival_id):
         playdata['music'] = unescape(row.find(attrs={'class':'result_music'}).find('a').text)
         playdata['difficulty'] = DifficultyString[int(row.find(attrs={'class':'level'}).find('img')['src'][-5:-4])]
         playdata['score'] = row.findAll('li')[-1].text.split('/')[0]
+        playdata['music_id'] = int(row.find(attrs={'class':'result_music'}).find('a').get('href')[-8:])
         if update_date is None or update_date < playdata['date']:
           update_date = playdata['date']
         if last_update and last_update >= playdata['date']:
           up_to_date = True
           break
 
-        music_id = r.hget('music_id', playdata['music'])
+        music_id = r.hget('music_id', playdata['music_id'])
         if music_id is None:
-            new_id = int(row.find(attrs={'class':'result_music'}).find('a').get('href')[-8:])
-            r.hset('music_id', playdata['music'], new_id)
+            r.hset('music_id', playdata['music_id'], playdata['music'])
         playHistory.append(playdata)
 
       if up_to_date:
@@ -507,9 +524,14 @@ def getUserHistory(rival_id):
       convertedScore = None
       if difficulty != "EDIT":
         convertedScore = calcConvertedScore(row['music'], difficulty, score)
-        updatedScore = calcUpdatedScore(rival_id, row['music'], difficulty, score)
+        updatedScore = calcUpdatedScore(rival_id, row['music_id'], difficulty, score)
       if updatedScore[0] == '+':
-          updatedScore = IRCColor['light_red'] + updatedScore + RankColor[rank]
+        if rival_info is not None:
+          rivalScore = getUserMusicScore(int(rival_info), row['music_id'], difficulty)
+          diffScore = score - rivalScore
+          if int(updatedScore) >= diffScore:
+            updatedScore = updatedScore + IRCColor['magenta'] + '[' + diffScore + ']'
+        updatedScore = IRCColor['light_red'] + updatedScore + RankColor[rank]
       elif updatedScore[0] == '-':
           updatedScore = IRCColor['dark_blue'] + updatedScore + RankColor[rank]
       if convertedScore is not None:

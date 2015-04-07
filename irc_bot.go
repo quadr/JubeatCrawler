@@ -119,6 +119,20 @@ func addSachalUser(handle, rivalId string) error {
 	return nil
 }
 
+func setRivalUser(myId, rivalId string) error {
+	c, err := redis.Dial("tcp", ":6379")
+	if err != nil {
+		log.Println("Redis Connect Error : ", err)
+		return err
+	}
+	defer c.Close()
+	c.Do("SELECT", 10)
+	if _, err := c.Do("HSET", "rival_info", myId, rivalId); err != nil {
+		return err
+	}
+	return nil
+}
+
 func selectMusic(conn *irc.Conn, lv ...int) {
 	var info *MusicInfo
 	var musiclist []*MusicInfo
@@ -201,6 +215,16 @@ func main() {
 						}
 					} else {
 						conn.Privmsg("#jubeater", "!사찰 [Handle] [Rival ID]")
+					}
+				case "라이벌":
+					if len(cmds) == 3 {
+						if err := setRivalUser(cmds[1], cmds[2]); err != nil {
+							conn.Privmsg("#jubeater", err.Error())
+						} else {
+							conn.Privmsg("#jubeater", "라이벌 등록 완료")
+						}
+					} else {
+						conn.Privmsg("#jubeater", "!라이벌 [내 Rival ID] [라이벌 Rival ID]")
 					}
 				default:
 					conn.Privmsg("#jubeater", "잘못된 명령입니다.")
