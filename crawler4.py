@@ -11,7 +11,7 @@ import collections
 from gevent import monkey
 from datetime import datetime, timedelta
 from BeautifulSoup import BeautifulSoup
-import sys, traceback
+import sys, traceback, os
 import json, HTMLParser
 import re
 
@@ -249,6 +249,33 @@ def getHttpContents(url):
   
   return None
 
+def processCaptcha(http):
+  captcha_result = {}
+  loginUrl = 'https://p.eagate.573.jp/gate/p/login.html'
+  loginHeader = { 'Origin': 'https://p.eagate.573.jp', 'Referer': 'https://p.eagate.573.jp/gate/p/login.html', 'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.72 Safari/537.36'  }
+  res, c = http.request(loginUrl, 'GET', headers=loginHeader)
+  if res.status != 200:
+    return captcha_result
+  s = BeautifulSoup(c.decode('shift_jisx0213'))
+  captcha = s.find('img', attrs={'width': '200', 'height': '50'})
+  if captcha is None:
+    return captcha_result
+  c_url = 'https://p.eagate.573.jp' + captcha['src']
+  c_key = captcha['src'].split('=')[1]
+  res, c = http.request(c_url, 'GET', headers=loginHeader)
+  if res.status != 200:
+    return captcha_result
+  c_file = c_key + '.jpg'
+  c_out = c_key + '.out'
+  with open(c_file, 'w') as f:
+    f.write(c)
+  os.system('cd kcaptcha; ./read.js ../{} > ../{}'.format(c_file, c_out))
+  with open(c_out, 'r') as f:
+    captcha_result = {'key': c_key, 'imgstr': f.read().split()[0]}
+  os.remove(c_file)
+  os.remove(c_out)
+  return captcha_result
+
 def login(kid=None, password=None):
   http = httplib2.Http()
 
@@ -265,6 +292,7 @@ def login(kid=None, password=None):
   loginHeader = { 'content-type' : 'application/x-www-form-urlencoded', 'Origin': 'https://p.eagate.573.jp', 'Referer': 'https://p.eagate.573.jp/gate/p/login.html', 'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.72 Safari/537.36'  }
   auth_info = r.hgetall('auth_info')
   auth_info['OTP'] = ''
+  auth_info.update(processCaptcha(http))
   params = urllib.urlencode(auth_info)
   res, c = http.request(loginUrl, 'POST', params, headers=loginHeader)
   if res.status == 302 :
@@ -481,13 +509,13 @@ def getUserHistory(rival_id):
     c = getHttpContents(playHistoryUrl%(rival_id,))
     for page in [1]:
       if c is None:
-        return []
+        return [], []
       
       rows = c.findAll(attrs={'class':'history_container2'})
 
       # Being 만세!
       if len(rows) == 0:
-        return []
+        return [], []
 
       for row in rows:
         playdata = {}
@@ -559,7 +587,7 @@ def getUserHistory(rival_id):
   except Exception, e:
     traceback.print_exc(file=sys.stdout)
     logging.error('getUserHistory Error: %s(%d)'%(e, rival_id))
-    return []
+    return [], []
 
 def updateContestHistory():
   try:
@@ -579,6 +607,7 @@ def updateContestHistory():
     [ r.lpush('IRC_HISTORY', message) for job in jobs for message in job.value[1] ]
     
     playdata = dict(zip(member_list.keys(), [ _.value[0] for _ in jobs ]))
+
     r.ltrim('recent_history', 0, 200)
 
     for contest_id, members in contest_members.iteritems():
