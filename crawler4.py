@@ -227,13 +227,18 @@ def calcUpdatedScore(rival_id, music_id, difficulty, score):
     else:
         return '0'
 
+class AuthError(Exception):
+  def __init__(self):
+    pass
+  def __str__(self):
+    return "AuthError"
+
 def getHttpContents(url):
   try:
     http = httplib2.Http()
     r = getRedis()
     if not r.exists('cookie'):
-      if not login():
-        return None
+      raise AuthError()
 
     res, c = http.request(url, headers={'cookie':r.get('cookie')})
     if 'err' in res['content-location'] or 'REDIRECT' in res['content-location']:
@@ -242,13 +247,25 @@ def getHttpContents(url):
     s = BeautifulSoup(c.decode('shift_jisx0213'))
     if s.find('a', attrs={'class': 'login'}) is not None:
       r.delete('cookie')
-      login()
+      raise AuthError()
+    else:
+      cookie = Cookie.SimpleCookie(res['set-cookie']).values()[0].OutputString(attrs=[])
+      if cookie is not None and len(cookie) != 0:
+        expires = Cookie.SimpleCookie(res['set-cookie']).values()[0]['expires']
+        expire_date = datetime.strptime(expires, '%a, %d-%b-%Y %H:%M:%S %Z') + timedelta(hours=9)
+        r.set('cookie', cookie)
+        r.expireat('cookie', int(time.mktime(expire_date.timetuple())))
     return s
+  except AuthError:
+    logging.error("Session Expired!!!")
+    r.lpush('IRC_HISTORY', u'치선☆talk: 세션이 만료되었습니다. 다시 로그인해주세요.')
+    sys.exit()
   except Exception, e:
     logging.error('getHttpContents : %s %s'%(url, e))
   
   return None
 
+"""
 def processCaptcha(http):
   captcha_result = {}
   loginUrl = 'https://p.eagate.573.jp/gate/p/login.html'
@@ -306,6 +323,7 @@ def login(kid=None, password=None):
   else:
     logging.error('login failed')
     return False
+"""
 
 def getContestPeriod(unicode_date):
   date = [ datetime.strptime(_.encode('utf-8').strip(), u'%m月%d日 %H時'.encode('utf-8')) for _ in unicode_date.split(u'〜') ]
