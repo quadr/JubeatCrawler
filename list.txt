@@ -553,7 +553,7 @@ ZZ	D.J.Amuro	154	5	8	10	387	715	956
 幻想系世界修復少女	Last Note.	193	5	7	9	301	461	644
 回レ！雪月花	歌組雪月花	160	4	7	9	225	422	638
 黒髪乱れし修羅となりて	村正クオリア	150	3	6	9	246	365	927
-Too Late Snow [2]	movies (moimoi × Xceon × Dai.)	138	4	9	10	355	723	906
+Too Late Snow [ 2 ]	movies (moimoi × Xceon × Dai.)	138	4	9	10	355	723	906
 エキサイティング！！も・ちゃ・ちゃ☆	日向美ビタースイーツ♪	187	5	7	9	300	584	705
 ぽかぽかレトロード	日向美ビタースイーツ♪	178	4	7	9	345	469	741
 3 A.M. ディテクティブ・ゲーム	日向美ビタースイーツ♪	162	3	6	9	310	502	749
@@ -644,40 +644,40 @@ Amazing Parade	Czecho No Republic	160	3	7	9	217	491	717
 Highschool ♡ love	E-girls	128	3	6	8	295	379	572
 Wake up!	AAA	176	2	6	8	186	328	525
 glacia	DJ TOTTO	186	6	9	10	494	750	945
-glacia [2]	DJ TOTTO	186	6	9	10	504	789	936
+glacia [ 2 ]	DJ TOTTO	186	6	9	10	504	789	936
 過食性:アイドル症候群	スズム feat.GUMI & MAYU	200	5	9	10	416	716	900
-FLOWER [2]	DJ YOSHITAKA	173	6	8	10	402	683	950
-†渚の小悪魔ラヴリィ～レイディオ† [2]	夏色ビキニのPrim	190	6	8	10	380	560	790
+FLOWER [ 2 ]	DJ YOSHITAKA	173	6	8	10	402	683	950
+†渚の小悪魔ラヴリィ～レイディオ† [ 2 ]	夏色ビキニのPrim	190	6	8	10	380	560	790
 アガット	Bazole	200	5	8	10	438	561	821
 Niflheimr	Qrispy Joybox	186	5	8	10	294	488	767
-トリカゴノ鳳凰 [2]	L.E.D. Vs. 幽閉サテライト	185	4	8	10	316	585	974
-We're so Happy [2]	Ryu☆	185	4	8	10	268	624	904
+トリカゴノ鳳凰 [ 2 ]	L.E.D. Vs. 幽閉サテライト	185	4	8	10	316	585	974
+We're so Happy [ 2 ]	Ryu☆	185	4	8	10	268	624	904
 overcomplexification	かめりあ	190	4	8	10	314	599	790
 Two Pianists	小野秀幸	178	4	8	10	304	512	770
 Ausretious#1-まどろみ、或いは嘆色の夢-	EOOZ	168	5	7	10	358	569	850
 天国と地獄	UNISON SQUARE GARDEN	150	4	7	10	301	498	799
 炎のDiargos	Mutsuhiko Izumi	230	4	8	9	303	653	837
-Synchrogazer [2]	(水樹奈々)	159	2	8	9	185	484	626
+Synchrogazer [ 2 ]	(水樹奈々)	159	2	8	9	185	484	626
 prop the world	S-C-U	130	4	7	9	271	518	774
 白い雪のプリンセスは	のぼる↑	200	4	7	9	282	468	729
-天ノ弱 [2]	164 feat. GUMI	200-205	4	7	9	259	557	701
+天ノ弱 [ 2 ]	164 feat. GUMI	200-205	4	7	9	259	557	701
 アレスの楯	劇団レコード	174	4	7	9	231	394	671
-Love♥km [2]	dj TAKA feat. REN	184	4	7	9	229	399	595
+Love♥km [ 2 ]	dj TAKA feat. REN	184	4	7	9	229	399	595
 Braid & Blade	SHAMDEL	153	3	7	9	249	509	746
 不可逆リプレイス	MY FIRST STORY	200	3	7	9	252	418	541
-robin [2]	S-C-U	190	4	6	9	245	420	597
+robin [ 2 ]	S-C-U	190	4	6	9	245	420	597
 Too Late Snow	movies (moimoi × Xceon × Dai.)	138	3	6	9	236	433	803
-Dragon Night [2]	SEKAI NO OWARI	124	3	6	9	232	493	655
-女々しくて [2]	ゴールデンボンバー	143	2	6	9	170	409	593
-Daydream cafe [2]	Petit Rabbit’s	150	3	7	8	179	391	482
-走れメロンパン [2]	日向美ビタースイーツ♪	170	4	6	8	215	316	551
-君をのせて feat.sayurina [2]	新井大樹	140	3	6	8	175	430	673
-にんじゃりばんばん [2]	きゃりーぱみゅぱみゅ	130	3	6	8	232	356	600
+Dragon Night [ 2 ]	SEKAI NO OWARI	124	3	6	9	232	493	655
+女々しくて [ 2 ]	ゴールデンボンバー	143	2	6	9	170	409	593
+Daydream cafe [ 2 ]	Petit Rabbit’s	150	3	7	8	179	391	482
+走れメロンパン [ 2 ]	日向美ビタースイーツ♪	170	4	6	8	215	316	551
+君をのせて feat.sayurina [ 2 ]	新井大樹	140	3	6	8	175	430	673
+にんじゃりばんばん [ 2 ]	きゃりーぱみゅぱみゅ	130	3	6	8	232	356	600
 Dragon Night	SEKAI NO OWARI	124	2	5	8	197	435	636
-キセキ [2]	(GReeeN)	94	2	5	8	168	353	556
+キセキ [ 2 ]	(GReeeN)	94	2	5	8	168	353	556
 MATATABISTEP	パスピエ	135	2	5	8	218	365	521
 サンキュー。	大原櫻子	128	2	4	7	162	373	560
-レット・イット・ゴー～ありのままで～ [2]	(松たか子)	137	1	3	7	76	203	360
+レット・イット・ゴー～ありのままで～ [ 2 ]	(松たか子)	137	1	3	7	76	203	360
 レット・イット・ゴー～ありのままで～	(松たか子)	137	1	3	6	64	181	321
 拙者はSAMURAI FOOD	S-C-U a.k.a. Food Samurai×A応P	136	3	7	9	251	494	653
 椀・of・Relaxation	A応P	96	3	7	9	215	422	739
@@ -687,7 +687,7 @@ CHERNOBOG	漆黒のEBONY	200	5	9	10	430	761	916
 Sky High	Cuvelia	153	4	10	10	381	872	798
 Valanga	DJ TOTTO	186	6	9	10	436	703	842
 見習い天使と星降りの丘	DJ TOTTO	174	4	8	10	264	553	806
-Windy Fairy [2]	DJ TOTTO	180	4	7	9	278	465	690
+Windy Fairy [ 2 ]	DJ TOTTO	180	4	7	9	278	465	690
 スカイダイバー	ヒゲドライバー feat.ヒゲドライVAN	180	3	7	9	215	408	606
 ケンぱ！ケンぱ！拳拳ぱん打！	ぱんぱんぱん打	200	3	6	9	280	459	628
 ぱんだしんけん１、２、３～ちえ！おっしょさんにはかなわないや！～	おひさまくらぶ	158	3	6	9	236	417	618
@@ -758,7 +758,7 @@ BLACK or WHITE?	BlackYooh vs. siromaru	185	5	9	10	350	745	911
 Bleep Beep Bop	kors k	175	4	7	10	409	545	921
 Invisible Border	world sequence	156	4	6	9	167	301	629
 夢有	Des-ROW・組	144-170	3	6	8	255	505	777
-Struggle [2]	Masayoshi Minoshima(ALR)	180	2	6	8	198	372	615
+Struggle [ 2 ]	Masayoshi Minoshima(ALR)	180	2	6	8	198	372	615
 Endless, Sleepless Night	samfree feat. (V)・∀・(V) かにぱん。	165	3	7	9	234	558	848
 KAMAITACHI	DJ TECHNORCH fw. GUHROOVY	165	5	9	10	428	820	906
 ULTRA HAPPY MEGAMIX	DJ Genki	180	4	8	9	296	598	743
@@ -806,7 +806,7 @@ T・S・F in にっぽん！	橘・シルフィンフォード（CV：古川由�
 sweet sweet everytime sweet	海老名菜々（CV：影山灯）	110	3	6	8	142	365	522
 My Precious	本場切絵（CV：白石晴香）	136	3	5	7	131	278	386
 ひだまりデイズ	妹S	134	2	5	7	120	261	346
-枝に結ぶ願い [2]	Akhuta	204	4	8	9	357	519	735
+枝に結ぶ願い [ 2 ]	Akhuta	204	4	8	9	357	519	735
 六花にくちづけ	Akhuta	210	5	7	9	291	538	694
 星宿る空の下で	Akhuta	204	4	7	9	307	547	859
 Good bye, Summer～さよならは言わない～	私立BEMANI学園軽音部 OB	165	3	7	9	202	397	642
