@@ -690,7 +690,7 @@ Valanga	DJ TOTTO	186	6	9	10	436	703	842
 Windy Fairy [ 2 ]	DJ TOTTO	180	4	7	9	278	465	690
 スカイダイバー	ヒゲドライバー feat.ヒゲドライVAN	180	3	7	9	215	408	606
 ケンぱ！ケンぱ！拳拳ぱん打！	ぱんぱんぱん打	200	3	6	9	280	459	628
-ぱんだしんけん１、２、３～ちえ！おっしょさんにはかなわないや！～	おひさまくらぶ	158	3	6	9	236	417	618
+ぱんだしんけん１、２、３ 〜ちえ！おっしょさんにはかなわないや！〜	おひさまくらぶ	158	3	6	9	236	417	618
 POLICY BREAK Medley from SOUND VOLTEX×jubeat	United Composers from jubeat	93-311	5	9	10	402	706	1074
 月風魔伝 ～ビーストメドレー～	Akhuta	170	4	7	9	326	533	823
 Twinbee's Home Town Song	Sota Fujimori	168	2	6	9	162	417	698
@@ -702,7 +702,7 @@ Qubellic Prism	Nazzo-Non-Heat	170	4	7	9	328	522	745
 アキネイション	ビートまりお（COOL&CREATE）	185	4	9	10	304	660	769
 SPACE VILLAGE	サイバー劇レコ	170	4	8	9	274	567	751
 GRADIUS Ⅱ ～ビーストメドレー～	Sota Fujimori	190	3	6	9	271	417	684
-がんばれゴエモン ～ビーストメドレー～	96	113-190	3	6	9	188	370	526
+がんばれゴエモン　〜 ビーストメドレー 〜	96	113-190	3	6	9	188	370	526
 nostos	Setaria Virtuoso	86-144	4	7	9	226	515	700
 蟲の棲む処	かめりあ feat. Nana Takahashi	161	4	8	10	255	500	684
 CARNIVOROUS	SOUND HOLIC feat. Nana Takahashi	170	3	7	9	223	455	570
@@ -719,7 +719,7 @@ NANIMONO（feat.米津玄師）	中田ヤスタカ	128	2	4	7	137	253	503
 爆なな☆てすとロイヤー	ARM feat.ななひら	200	5	9	10	322	657	736
 Phlox	Sota Fujimori 2nd Season	185	5	8	10	348	626	757
 びいすと！	ビートまりおとARM	200	4	7	10	202	376	736
-Lost Wing at.0	猫叉Master+	185	4	8	9	255	496	690
+Lost wing at.0	猫叉Master+	185	4	8	9	255	496	690
 トキメキストリーム	Qrispy Joybox	164	4	8	9	236	541	669
 LOSER	米津玄師	121	4	7	9	273	614	782
 ロプノールの商隊	Akhuta	186	4	7	9	280	514	733
