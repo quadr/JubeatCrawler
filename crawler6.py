@@ -10,22 +10,22 @@ import unicodedata
 import collections
 from gevent import monkey
 from datetime import datetime, timedelta
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 import sys, traceback, os
 import json, HTMLParser
 import re
 
 monkey.patch_all(thread=False)
 
-playScoreUrl = 'https://p.eagate.573.jp/game/jubeat/qubell/p/playdata/music.html?rival_id=%d&sort=&page=%d'
-musicPageUrl = 'https://p.eagate.573.jp/game/jubeat/qubell/p/playdata/music_detail.html?rival_id=%d&mid=%d'
-playHistoryUrl = 'https://p.eagate.573.jp/game/jubeat/qubell/p/playdata/history.html?rival_id=%d'
-contestListUrl = 'https://p.eagate.573.jp/game/jubeat/qubell/p/contest/join_info.html?s=1&rival_id=%d'
-contestDataUrl = 'https://p.eagate.573.jp/game/jubeat/qubell/p/contest/detail.html?contest_id=%d'
-playerInfoUrl = 'https://p.eagate.573.jp/game/jubeat/qubell/p/playdata/index_other.html?rival_id={0}'
+playScoreUrl = 'https://p.eagate.573.jp/game/jubeat/clan/playdata/music.html?rival_id=%d&sort=&page=%d'
+musicPageUrl = 'https://p.eagate.573.jp/game/jubeat/clan/playdata/music_detail.html?rival_id=%d&mid=%d'
+playHistoryUrl = 'https://p.eagate.573.jp/game/jubeat/clan/playdata/history.html?rival_id=%d'
+contestListUrl = 'https://p.eagate.573.jp/game/jubeat/clan/contest/join_info.html?s=1&rival_id=%d'
+contestDataUrl = 'https://p.eagate.573.jp/game/jubeat/clan/contest/detail.html?contest_id=%d'
+playerInfoUrl = 'https://p.eagate.573.jp/game/jubeat/clan/playdata/index_other.html?rival_id={0}'
 
 def getRedis():
-  return redis.Redis(db=9)
+  return redis.Redis(db=8)
 
 def now():
   return datetime.now().strftime('%Y/%m/%d %H:%M:%S')
@@ -245,7 +245,7 @@ def getHttpContents(url):
     if 'err' in res['content-location'] or 'REDIRECT' in res['content-location']:
       logging.error('getHttpContents : %s'%url)
       return None
-    s = BeautifulSoup(c.decode('shift_jisx0213'))
+    s = BeautifulSoup(c.decode('shift_jisx0213'), 'html5lib')
     if s.find('a', attrs={'class': 'login'}) is not None:
       r.delete('cookie')
       raise AuthError()
@@ -405,9 +405,9 @@ def updateContestData(contest_id):
 def getMusicScorePage(url):
   for i in xrange(10):
     c = getHttpContents(url)
-    if c is not None and c.find(id='play_music_table'):
+    if c is not None and c.find('table', class_='music_data'):
       return c
-    music_data = c.find(id='music_data')
+    music_data = c.find(id='contents')
     if music_data and u'公開' in music_data.text:
       return None
     gevent.sleep(4)
@@ -417,7 +417,8 @@ def getMusicScorePage(url):
 def getUserScore(rival_id):
   try:
     r = getRedis()
-    user_name = r.hget('rival_id', rival_id).decode('utf-8')
+#    user_name = r.hget('rival_id', rival_id).decode('utf-8')
+    user_name = 'CHISUN'
 
     logging.info("Getting scores of %s(%d)"%(user_name, rival_id))
     c = getMusicScorePage(playScoreUrl%(rival_id, 1))
@@ -425,11 +426,10 @@ def getUserScore(rival_id):
       logging.error("getUserScore Error: site is not availabe. (1)")
       return []
 
-
     playScore = []
     hashData = {}
     pages = []
-    page_indice = c.find(attrs={"class":"pager"}).findAll(attrs={"class":"number"})
+    page_indice = c.find(attrs={"class":"page"}).findAll(attrs={"class":"num"})
     for page_index in page_indice:
       idx = int(page_index.text)
       page = None
@@ -442,33 +442,30 @@ def getUserScore(rival_id):
         return []
       pages.append(page)
 
-
     for page in pages:
-        oddrows = page.findAll(attrs={"class":"odd"})
-        evenrows = page.findAll(attrs={"class":"even"})
-        rows = oddrows + evenrows
+        rows = page.find('table', class_='music_data').findAll('tr')[1:]
         
         #scoredata : music, bsc_score, bsc_fc, adv_score, adv_fc, ext_score, ext_fc
         for row in rows:
             #bsc adv ext
             scores = [(row.contents[5]), row.contents[7], row.contents[9]]
             scoredata = {}
-            scoredata['music'] = unescape(row.find('td', attrs={'class':'mname'}).find('a').text)
-            scoredata['music_id'] = row.find('td', attrs={'class':'mname'}).find('a')['href'][-8:]
+            scoredata['music'] = unescape(row.findAll('td')[1].find('a').text)
+            scoredata['music_id'] = row.findAll('td')[1].find('a')['href'][-8:]
             scoredata['score'] = []
             scoredata['fc'] = []
             
             for score in scores:
-                if score.text == "-":
+                if score.text.strip() == "-":
                     scoredata['score'].append(0)
                 else:
                     scoredata['score'].append(int(score.text))
-                scoredata['fc'].append(int(score.find('div')['class'][-1]) == 1)
+                scoredata['fc'].append(int(score.find('div')['class'][0][-1]) == 1)
             playScore.append(scoredata)
             hashData[scoredata['music_id']] = scoredata['music'] + ':' + str(scoredata['score']) + ':' + str(scoredata['fc'])
 
     score_key = 'score:%d'%rival_id
-    map(lambda _: logging.info(user_name + u'%(music)s + %(score)s + %(fc)s'%_), playScore)
+    map(lambda _: logging.info(user_name + u' %(music)s + %(score)s + %(fc)s'%_), playScore)
     r.hmset(score_key, hashData)
 
     r.lpush('IRC_HISTORY', u'\u0002[%s]님의 스코어가 업데이트 되었습니다.'%(user_name))
@@ -483,11 +480,8 @@ def getUserScore(rival_id):
 # returns (unicode string * unicode string):
 #   (normalized date u"%04d/%02d/%02d %02d:%02d:%02d", place)
 def parseDatePlace(raw):
-  date_label = u'プレー日時：'
-  place_label = u'プレー店舗：'
-
-  if date_label == -1 or place_label == -1:
-    raise RuntimeError('no label found', raw)
+  date_label = u'プレー日時:'
+  place_label = u'プレー店舗:'
 
   date_index = raw.find(date_label) + len(date_label)
   place_index = raw.find(place_label) + len(place_label)
@@ -500,11 +494,12 @@ def parseDatePlace(raw):
 
   norm_date = u'{year:04}/{month:02}/{day:02} {tm}'.format(year=year, month=month, day=day, tm=tm)
   norm_place = unicodedata.normalize('NFKC', raw[place_index:])
-  return (norm_date, norm_place)
+  return (norm_date.strip(), norm_place.strip())
 
 def getUserHistory(rival_id):
   try:
     r = getRedis()
+    """
     last_update = r.hget('last_update', rival_id)
     last_update = last_update and last_update.decode('utf-8')
     update_date = last_update
@@ -513,6 +508,9 @@ def getUserHistory(rival_id):
     rival_info = r.hget('rival_info', rival_id)
     if rival_info is not None:
       rival_name = r.hget('rival_id', rival_info).decode('utf-8')
+    """
+    update_date = last_update = '0'
+    user_name = 'CHISUN'
 
     playHistory = []
     up_to_date = False
@@ -530,7 +528,7 @@ def getUserHistory(rival_id):
       if c is None:
         return [], []
       
-      rows = c.findAll(attrs={'class':'history_container2'})
+      rows = c.findAll('div', class_='history_data')
 
       # Being 만세!
       if len(rows) == 0:
@@ -538,13 +536,14 @@ def getUserHistory(rival_id):
 
       for row in rows:
         playdata = {}
-        date, place = parseDatePlace(unescape(row.find(attrs={'class':'data1_info'}).text))
+        date, place = parseDatePlace(unescape(row.find(attrs={'class':'info_history'}).text))
+        playInfo = row.find(class_='player_self')
         playdata['date'] = date
         playdata['place'] = place
-        playdata['music'] = unescape(row.find(attrs={'class':'result_music'}).find('a').text)
-        playdata['difficulty'] = DifficultyString[int(row.find(attrs={'class':'level'}).find('img')['src'][-5:-4])]
-        playdata['score'] = row.findAll('li')[-1].text.split('/')[0]
-        playdata['music_id'] = int(row.find(attrs={'class':'result_music'}).find('a').get('href')[-8:])
+        playdata['music'] = unescape(playInfo.find(attrs={'class':'info_title'}).find('a').text)
+        playdata['difficulty'] = DifficultyString[int(playInfo.find('li').find('img')['src'][-5:-4])]
+        playdata['score'] = playInfo.findAll('li')[-1].text.split('/')[0]
+        playdata['music_id'] = int(playInfo.find(attrs={'class':'info_title'}).find('a').get('href')[-8:])
         if update_date is None or update_date < playdata['date']:
           update_date = playdata['date']
         if last_update and last_update >= playdata['date']:
@@ -558,7 +557,7 @@ def getUserHistory(rival_id):
 
       if up_to_date:
         break
-    
+
     playHistory.reverse()
     history_key = 'history:%d'%rival_id
     map(lambda _: logging.info(user_name + ' %(date)s %(music)s %(difficulty)s %(score)s %(place)s'%_), playHistory)
