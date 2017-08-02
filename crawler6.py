@@ -499,7 +499,6 @@ def parseDatePlace(raw):
 def getUserHistory(rival_id):
   try:
     r = getRedis()
-    """
     last_update = r.hget('last_update', rival_id)
     last_update = last_update and last_update.decode('utf-8')
     update_date = last_update
@@ -508,9 +507,6 @@ def getUserHistory(rival_id):
     rival_info = r.hget('rival_info', rival_id)
     if rival_info is not None:
       rival_name = r.hget('rival_id', rival_info).decode('utf-8')
-    """
-    update_date = last_update = '0'
-    user_name = 'CHISUN'
 
     playHistory = []
     up_to_date = False
