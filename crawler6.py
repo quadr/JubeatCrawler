@@ -417,8 +417,7 @@ def getMusicScorePage(url):
 def getUserScore(rival_id):
   try:
     r = getRedis()
-#    user_name = r.hget('rival_id', rival_id).decode('utf-8')
-    user_name = 'CHISUN'
+    user_name = r.hget('rival_id', rival_id).decode('utf-8')
 
     logging.info("Getting scores of %s(%d)"%(user_name, rival_id))
     c = getMusicScorePage(playScoreUrl%(rival_id, 1))
