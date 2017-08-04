@@ -250,7 +250,7 @@ RED ZONE	Tatsh&NAOKI	165	4	8	10	309	612	871
 RePrise	SHOGO	182	4	7	9	215	360	648
 Resurrection	Dormir	140	3	6	9	204	394	585
 RIGHT NOW	GOOD4NOTHING	184	2	6	9	142	357	630
-Right on time (Ryu☆Remix)	Ryu☆	149	5	7	9	263	465	638
+Right on time (Ryu☆ Remix)	Ryu☆	149	5	7	9	263	465	638
 Riot of Color	TAG	150	5	8	10	291	561	855
 robin	S-C-U	190	4	6	9	263	417	567
 Rocknrolla!	[Champagne]	159	3	7	8	210	486	623
@@ -662,7 +662,7 @@ prop the world	S-C-U	130	4	7	9	271	518	774
 白い雪のプリンセスは	のぼる↑	200	4	7	9	282	468	729
 天ノ弱 [ 2 ]	164 feat. GUMI	200-205	4	7	9	259	557	701
 アレスの楯	劇団レコード	174	4	7	9	231	394	671
-Love♥km [ 2 ]	dj TAKA feat. REN	184	4	7	9	229	399	595
+Love  km [ 2 ]	dj TAKA feat. REN	184	4	7	9	229	399	595
 Braid & Blade	SHAMDEL	153	3	7	9	249	509	746
 不可逆リプレイス	MY FIRST STORY	200	3	7	9	252	418	541
 robin [ 2 ]	S-C-U	190	4	6	9	245	420	597
