@@ -537,7 +537,8 @@ def getUserHistory(rival_id):
         playdata['place'] = place
         playdata['music'] = unescape(playInfo.find(attrs={'class':'info_title'}).find('a').text)
         playdata['difficulty'] = DifficultyString[int(playInfo.find('li').find('img')['src'][-5:-4])]
-        playdata['score'] = playInfo.findAll('li')[-1].text.split('/')[0]
+        playdata['score'] = playInfo.findAll('li')[1].text.split('/')[0]
+        playdata['hard_mode'] = (playInfo.findAll('li')[-1].text.strip() == 'HARD MODE')
         playdata['music_id'] = int(playInfo.find(attrs={'class':'info_title'}).find('a').get('href')[-8:])
         if update_date is None or update_date < playdata['date']:
           update_date = playdata['date']
@@ -561,6 +562,7 @@ def getUserHistory(rival_id):
       score = int(row["score"])
       difficulty = row["difficulty"]
       rank = getRank(score)
+      modeText = (IRCColor['light_red'] + u'HARD MODE ') if row['hard_mode'] else u''
       updatedScore = '0'
       convertedScore = None
       if difficulty != "EDIT":
@@ -580,16 +582,16 @@ def getUserHistory(rival_id):
         convertedScore = convertedScore / 0.3
       if convertedScore is not None or convertedScore > 0:
         #r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s (%s)\u000f - %s%d (%.2f/%s)\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor[rank], score, convertedScore, updatedScore, row['date'], row['place']))
-        irc_history.append(u'\u0002[%s] %s%s (%s)\u000f - %s%d (%.2f/%s)\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor[rank], score, convertedScore, updatedScore, row['date'], row['place']))
+        irc_history.append(u'\u0002[%s] %s%s (%s)\u000f - %s%d (%.2f/%s) %s\u000f- \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor[rank], score, convertedScore, updatedScore, modeText, row['date'], row['place']))
       else:
         #r.lpush('IRC_HISTORY', u'\u0002[%s] %s%s (%s)\u000f - %s%d (%s)\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor[rank], score, updatedScore, row['date'], row['place']))
-        irc_history.append(u'\u0002[%s] %s%s (%s)\u000f - %s%d (%s)\u000f - \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor[rank], score, updatedScore, row['date'], row['place']))
+        irc_history.append(u'\u0002[%s] %s%s (%s)\u000f - %s%d (%s) %s\u000f- \u0002%s - %s'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor[rank], score, updatedScore, modeText, row['date'], row['place']))
       if score == 1000000:
         #r.lpush('IRC_HISTORY', u'\u0002[알림] %s님이 %s%s (%s)\u000f\u0002를 %sEXCELLENT\u000f \u0002했습니다!!'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor["EXC"]))
-        irc_history.append( u'\u0002[알림] %s님이 %s%s (%s)\u000f\u0002를 %sEXCELLENT\u000f \u0002했습니다!!'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor["EXC"]))
+        irc_history.append( u'\u0002[알림] %s님이 %s%s (%s)\u000f\u0002를 %s%sEXCELLENT\u000f \u0002했습니다!!'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], modeText, RankColor["EXC"]))
       elif convertedScore is not None and int(round(convertedScore)) <= 2:
         #r.lpush('IRC_HISTORY', u'\u0002[알림] %s님이 %s%s (%s)\u000f\u0002를 %s%dgr\u000f \u0002했습니다. orz'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor["EXC"], int(round(convertedScore))))
-        irc_history.append(u'\u0002[알림] %s님이 %s%s (%s)\u000f\u0002를 %s%dgr\u000f \u0002했습니다. orz'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], RankColor["EXC"], int(round(convertedScore))))
+        irc_history.append(u'\u0002[알림] %s님이 %s%s (%s)\u000f\u0002를 %s%s%dgr\u000f \u0002했습니다. orz'%(user_name, LvColor[difficulty], row['music'], DifficultyShortString[difficulty], modeText, RankColor["EXC"], int(round(convertedScore))))
 
     if update_date:
       r.hset('last_update', rival_id, update_date)
