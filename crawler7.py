@@ -18,6 +18,7 @@ import re
 monkey.patch_all(thread=False)
 
 playScoreUrl = 'https://p.eagate.573.jp/game/jubeat/festo/playdata/music.html?rival_id=%d&sort=&page=%d'
+playScoreHardUrl = 'https://p.eagate.573.jp/game/jubeat/festo/playdata/music_hard.html?rival_id=%d&sort=&page=%d'
 musicPageUrl = 'https://p.eagate.573.jp/game/jubeat/festo/playdata/music_detail.html?rival_id=%d&mid=%d'
 playHistoryUrl = 'https://p.eagate.573.jp/game/jubeat/festo/playdata/history.html?rival_id=%d'
 contestListUrl = 'https://p.eagate.573.jp/game/jubeat/festo/contest/join_info.html?s=1&rival_id=%d'
@@ -417,13 +418,15 @@ def getMusicScorePage(url):
   return None
   
 
-def getUserScore(rival_id):
+def getUserScore(rival_id, hardmode=False):
   try:
     r = getRedis()
     user_name = r.hget('rival_id', rival_id).decode('utf-8')
 
+    url = playScoreHardUrl if hardmode else playScoreUrl
+
     logging.info("Getting scores of %s(%d)"%(user_name, rival_id))
-    c = getMusicScorePage(playScoreUrl%(rival_id, 1))
+    c = getMusicScorePage(url%(rival_id, 1))
     if c is None:
       logging.error("getUserScore Error: site is not availabe. (1)")
       return []
@@ -438,7 +441,7 @@ def getUserScore(rival_id):
       if idx == 1:
         page = c
       else:
-        page = getMusicScorePage(playScoreUrl%(rival_id, idx))
+        page = getMusicScorePage(url%(rival_id, idx))
       if page is None:
         logging.error("getUserScore Error: site is not availabe.({0})".format(idx))
         return []
@@ -467,10 +470,15 @@ def getUserScore(rival_id):
             hashData[scoredata['music_id']] = scoredata['music'] + ':' + str(scoredata['score']) + ':' + str(scoredata['fc'])
 
     score_key = 'score:%d'%rival_id
+    if hardmode:
+      score_key = 'hard_score:%d'%rival_id
     map(lambda _: logging.info(user_name + u' %(music)s + %(score)s + %(fc)s'%_), playScore)
     r.hmset(score_key, hashData)
 
-    r.lpush('IRC_HISTORY', u'\u0002[%s]님의 스코어가 업데이트 되었습니다.'%(user_name))
+    if hardmode:
+      r.lpush('IRC_HISTORY', u'\u0002[%s]님의 하드모드 스코어가 업데이트 되었습니다.'%(user_name))
+    else:
+      r.lpush('IRC_HISTORY', u'\u0002[%s]님의 스코어가 업데이트 되었습니다.'%(user_name))
     
   except Exception, e:
     traceback.print_exc(file=sys.stdout)
@@ -570,7 +578,7 @@ def getUserHistory(rival_id):
       convertedScore = None
       if difficulty != "EDIT":
         convertedScore = calcConvertedScore(row['music'], difficulty, score)
-        updatedScore = calcUpdatedScore(rival_id, row['music_id'], difficulty, score)
+        updatedScore = calcUpdatedScore(rival_id, row['music_id'], difficulty, score, row['hard_mode'])
       if updatedScore[0] == '+':
         if rival_info is not None:
           rivalScore = getUserMusicScore(int(rival_info), row['music_id'], difficulty)
@@ -619,6 +627,7 @@ def updateContestHistory():
 
     member_list = r.hgetall('rival_id')
     [ getUserScore(int(rival_id)) for rival_id in member_list.iterkeys() if not r.exists(('score:%s'%rival_id)) ]
+    [ getUserScore(int(rival_id), True) for rival_id in member_list.iterkeys() if not r.exists(('hard_score:%s'%rival_id)) ]
     jobs = [ gevent.spawn(getUserHistory, int(rival_id)) for rival_id, user in member_list.iteritems() ]
     gevent.joinall(jobs)
 
