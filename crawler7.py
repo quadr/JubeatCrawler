@@ -194,7 +194,7 @@ def getUserMusicScore(rival_id, music_id, difficulty):
 
 # example: calcUpdatedScore(57710029539329, 'only my railgun', 'EXTREME', 999031) -> -969
 # Also updates the db if best score is changed
-def calcUpdatedScore(rival_id, music_id, difficulty, score):
+def calcUpdatedScore(rival_id, music_id, difficulty, score, hardmode=False):
     if difficulty == 'BASIC': i = 0
     elif difficulty == 'ADVANCED': i = 1
     else: i = 2
@@ -202,13 +202,16 @@ def calcUpdatedScore(rival_id, music_id, difficulty, score):
     r = getRedis()
 
     user_name = r.hget("rival_id", rival_id).decode('utf-8')
-    if not r.exists('score:%d'%rival_id):
+    score_key = 'score:%d'%rival_id
+    if hardmode:
+      score_key = 'hard_score:%d'%rival_id
+    if not r.exists(score_key):
         return '?'
-    raw = r.hget('score:%d'%rival_id, music_id)
+    raw = r.hget(score_key, music_id)
     if raw is None:
         # if there is no score data, then make a new one
-        r.hset('score:%d'%rival_id, music_id, newScore(music_id))
-        raw = r.hget('score:%d'%rival_id, music_id)
+        r.hset(score_key, music_id, newScore(music_id))
+        raw = r.hget(score_key, music_id)
         if raw is None:
             return '?'
 
@@ -220,7 +223,7 @@ def calcUpdatedScore(rival_id, music_id, difficulty, score):
     result = score - prev_score
     if result > 0:
         prev['score'][i] = score
-        r.hset('score:%d'%rival_id, music_id, '%(title)s:%(score)s:%(fc)s'%prev)
+        r.hset(score_key, music_id, '%(title)s:%(score)s:%(fc)s'%prev)
         logging.info(user_name + ' updated score of [' + prev['title'] + ']')
         return '+' + str(result)
     elif result < 0:
