@@ -873,7 +873,7 @@ Evans ～NOSTALGIA Ver. ～	DJ YOSHITAKA Arranged by まらしぃ	112-182	4	7	9	
 CandyPop★Showcase	OSTER project	170	4	6	8	283	430	701
 狂髪天を撫でて綴れ雲の綻び 五体北風に散りて痕も無し	BEMANI Sound Team "Akhuta Works"	200	4	8	9	238	718	811
 キリステゴメン	東雲夏陽	156	5	7	9	436	555	755
-Couleur=Blanche	#FFFFFF	90-185	6	10	10.6	548	849	898
+Couleur=Blanche	#FFFFFF	90-185	6	10	10	548	849	898
 Claidheamh Soluis-光の剣- feat.はるの	猫大樹	160	3	6	9	309	502	806
 君氏危うくも近うよれ	A応P	162	3	6	8	162	381	581
 けもののおうじゃ★めうめう*3	日向美ビタースイーツ♪	162	3	6	8	206	450	697
@@ -902,7 +902,7 @@ Spring Rouge	izna	125	2	6	8	133	357	546
 smooooch・∀・ [ 2 ]	kors k	177	3	8	10	318	534	751
 星座が恋した瞬間を。	BEMANI Sound Team "DJ TOTTO feat.MarL"	186	3	7	9	192	570	724
 千本桜*4	黒うさP	154	3	7	9	225	449	678
-Diastrophism	かめりあ	228	9	9.6	10	797	816	1005
+Diastrophism	かめりあ	228	9	9	10	797	816	1005
 たからもの	セリカ＆エリカ	182	3	7	9	304	652	804
 闘え! ダダンダーン V	ときめきアイドル project	176	2	6	8	170	529	668
 脱法ロック	Neru	155	3	6	8	185	408	632
@@ -954,7 +954,7 @@ Midnight City Warfare	sky_delta	180	6	9	10	476	788	951
 Life is beautiful	BEMANI Sound Team "猫叉Master"	155	4	8	10	247	616	833
 Last Dress	はるなば	160	4	9	10	381	728	891
 Rampage☆Rag	かめりあ	334	6	8	10	447	724	970
-Rejoin	BEMANI Sound Team "HuΣeR feat.PON"	135	6	10	10.2	556	873	853
+Rejoin	BEMANI Sound Team "HuΣeR feat.PON"	135	6	10	10	556	873	853
 リバースユニバース	ナユタン星人	139	3	7	9	336	613	872
 ルミナスデイズ	ここなつ	145	2	4	7	140	272	430
 レゾンデートル、前線より	中島由貴	207	4	7	9	209	419	680
